@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M26 Rear Load Cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky rail (steps + worked-example case) | worksheet. Each step = what & why → equations (typeset, with the selected case's numbers) → inputs/tables → what to look for */
+:root{
+  --paper:#f3f4f1; --sheet:#ffffff; --ink:#18212b; --muted:#5d6874; --rule:#d5d9dc; --wash:#f0f2f4;
+  --accent:#1d5fbf; --accent-wash:#e6eefa;
+  --tension:#1d5fbf; --compress:#c2410c;
+  --ok:#17803d; --ok-wash:#e2f3e8; --warn:#a16207; --warn-wash:#fbf1d9; --bad:#b42318; --bad-wash:#fbe5e2;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161c; --sheet:#171e26; --ink:#e4e8ec; --muted:#9aa5b1; --rule:#2b3540; --wash:#1d2630;
+    --accent:#6ea2f0; --accent-wash:#1a283c; --tension:#6ea2f0; --compress:#f08a52;
+    --ok:#4cc27a; --ok-wash:#173324; --warn:#e0b04a; --warn-wash:#352a12; --bad:#f2786b; --bad-wash:#3a1b18;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161c; --sheet:#171e26; --ink:#e4e8ec; --muted:#9aa5b1; --rule:#2b3540; --wash:#1d2630;
+  --accent:#6ea2f0; --accent-wash:#1a283c; --tension:#6ea2f0; --compress:#f08a52;
+  --ok:#4cc27a; --ok-wash:#173324; --warn:#e0b04a; --warn-wash:#352a12; --bad:#f2786b; --bad-wash:#3a1b18;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15.5px/1.6 var(--body);}
+h1,h2,h3,h4{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:34px;line-height:1.08}
+h2{font-size:25px}
+h3{font-size:18px}
+h4{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+p{margin:0;max-width:72ch}
+ul,ol{margin:0;padding-left:1.3em;max-width:72ch;display:flex;flex-direction:column;gap:4px}
+.mono,td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px;max-width:1300px;margin:0 auto;padding:24px 20px 80px}
+.rail{position:sticky;top:14px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 28px);overflow:auto}
+.rail nav{display:flex;flex-direction:column;gap:1px;border-left:2px solid var(--rule)}
+.rail nav a{display:grid;grid-template-columns:26px 1fr;align-items:baseline;padding:5px 10px;color:var(--muted);text-decoration:none;font-size:14px;margin-left:-2px;border-left:2px solid transparent}
+.rail nav a b{font-family:var(--mono);font-weight:500;font-size:12px}
+.rail nav a:hover{color:var(--ink)}
+.rail nav a.on{color:var(--ink);border-left-color:var(--accent);font-weight:600}
+.railbox{display:flex;flex-direction:column;gap:8px;border:1px solid var(--rule);border-radius:6px;padding:10px;background:var(--sheet)}
+.railbox .chips{flex-direction:column}
+.railbox .chip{text-align:left;border-radius:4px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+main{display:flex;flex-direction:column;gap:22px;min-width:0}
+
+.step{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:24px 26px;display:flex;flex-direction:column;gap:18px;scroll-margin-top:12px}
+.step-h{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.step-n{font-family:var(--mono);font-size:13px;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 6px;line-height:20px}
+.lede{font-size:17px;color:var(--muted);max-width:68ch}
+.whatwhy{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.whatwhy>div{display:flex;flex-direction:column;gap:6px}
+.explain{border-left:3px solid var(--accent);background:var(--accent-wash);padding:12px 16px;border-radius:0 5px 5px 0;display:flex;flex-direction:column;gap:8px}
+.look{border-left:3px solid var(--warn);background:var(--warn-wash);padding:10px 14px;border-radius:0 5px 5px 0;display:flex;flex-direction:column;gap:6px}
+.look b:first-child{font-family:var(--display)}
+.sub{display:flex;flex-direction:column;gap:10px;padding-top:6px;border-top:1px dashed var(--rule)}
+.sub-h{display:flex;gap:10px;align-items:baseline}
+.sub-h .k{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start}
+.panel{border:1px solid var(--rule);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* equations */
+.work{background:var(--wash);border-radius:5px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;overflow-x:auto}
+.work .tag{font-size:12.5px;color:var(--muted)}
+.eq{overflow-x:auto;overflow-y:hidden;padding:2px 0;min-height:1.6em}
+.eq mjx-container[display="true"]{margin:.35em 0 !important;text-align:left !important}
+.eq.c mjx-container[display="true"]{text-align:center !important}
+.eq.raw{font-family:var(--mono);font-size:13px;white-space:pre-wrap}
+.m{white-space:nowrap}
+mjx-container{color:inherit}
+mjx-assistive-mml{position:absolute!important;top:0;left:0;clip:rect(1px,1px,1px,1px);padding:1px 0 0 0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important;display:block!important}
+.vars{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px;align-items:baseline}
+.vars dt{white-space:nowrap}
+.vars dd{margin:0;color:var(--muted)}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:13px;color:var(--muted)}
+.field .row{display:flex;align-items:center;gap:6px}
+.field .unit{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:22px}
+input[type=number],input[type=text],select,textarea{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;padding:5px 7px;width:100%;min-width:0}
+input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;border-color:color-mix(in srgb,var(--accent) 45%,var(--rule))}
+input:hover,select:hover{border-color:var(--accent)}
+textarea{font-family:var(--mono);font-size:12.5px;min-height:150px}
+
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:4px;padding:6px 10px;cursor:pointer;font-size:13.5px;text-align:left}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13.5px}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:5px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:6px 9px;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
+th{font-weight:600;font-size:12px;color:var(--muted);background:var(--wash)}
+td.num,th.num{text-align:right}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--wash)}
+tr.sel td{background:var(--accent-wash)}
+td input[type=number]{width:70px;padding:3px 5px}
+#geom-table td{padding:4px 5px}
+#geom-table td input[type=number]{width:84px;font-size:12.5px}
+#geom-table td:first-child{white-space:normal;font-size:13px}
+td input[type=text]{width:150px;padding:3px 5px}
+td select{width:auto;padding:3px 5px}
+td.wrap{white-space:normal;color:var(--muted);font-size:13px}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-wash);color:var(--ok)}
+.pill.warn{background:var(--warn-wash);color:var(--warn)}
+.pill.bad{background:var(--bad-wash);color:var(--bad)}
+.T{color:var(--tension);font-weight:600}
+.C{color:var(--compress);font-weight:600}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.tile{border:1px solid var(--rule);border-radius:5px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;border-top:4px solid var(--rule);background:var(--sheet)}
+.tile.ok{border-top-color:var(--ok)} .tile.bad{border-top-color:var(--bad)} .tile.warn{border-top-color:var(--warn)}
+.tile .k{font-size:13px;color:var(--muted)}
+.tile .v{font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12.5px;color:var(--muted)}
+
+.statement{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.moves{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;counter-reset:mv}
+.moves li{display:grid;grid-template-columns:30px 1fr;gap:10px;counter-increment:mv}
+.moves li::before{content:counter(mv);font-family:var(--mono);font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-size:12.5px}
+.moves a{font-weight:600;text-decoration:none}
+.schem{border:1px solid var(--rule);border-radius:6px;background:var(--wash);padding:8px}
+.schem svg{width:100%;height:auto;display:block}
+.legendrow{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legendrow i{display:inline-block;width:16px;height:12px;vertical-align:-1px;margin-right:6px;border-radius:2px}
+
+.viewer{position:relative;border:1px solid var(--rule);border-radius:5px;background:var(--wash)}
+.viewer canvas{display:block;width:100%;height:380px;cursor:grab;touch-action:none}
+.viewer .hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.viewer .vtools{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.chart canvas{width:100%;height:290px;display:block}
+.note{font-size:13.5px;color:var(--muted)}
+.issues{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;max-width:none}
+.issues li{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.issues li b.n{font-family:var(--mono);color:var(--accent)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:8px 14px;border-radius:4px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.dlg{border:1px solid var(--rule);border-radius:5px;padding:12px;display:none;flex-direction:column;gap:8px;background:var(--wash)}
+.dlg.on{display:flex}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;padding:14px}
+  .rail{position:static;max-height:none}
+  .rail nav{flex-direction:row;flex-wrap:wrap;border-left:0;gap:4px}
+  .rail nav a{border:1px solid var(--rule);border-radius:4px;margin:0;grid-template-columns:auto auto;gap:5px}
+  .railbox .chips{flex-direction:row}
+  .statement{grid-template-columns:1fr}
+  .step{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+<script>
+window.MathJax = {
+  tex: { packages: {'[-]': ['autoload','require']} },
+  svg: { fontCache: 'local' },
+  startup: { typeset: false, ready(){ MathJax.startup.defaultReady(); MathJax.startup.promise.then(()=>{ try{ document.head.appendChild(MathJax.svgStylesheet()); }catch(e){} if(window.__renderMath) window.__renderMath(); }); } }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="eyebrow">UCLA Bruin Baja · M26</div>
+    <nav id="nav">
+      <a href="#overview"><b>00</b>How this works</a>
+      <a href="#vehicle"><b>01</b>Load on one tire</a>
+      <a href="#cases"><b>02</b>Load cases → tire force</a>
+      <a href="#geometry"><b>03</b>Hardpoints &amp; directions</a>
+      <a href="#solve"><b>04</b>Equilibrium solve</a>
+      <a href="#upright"><b>05</b>Upright → trailing arm</a>
+      <a href="#links"><b>06</b>Camber link checks</a>
+      <a href="#jointloads"><b>07</b>Design loads for joints</a>
+      <a href="#changes"><b>08</b>Fixes vs old sheet</a>
+    </nav>
+    <div class="railbox">
+      <label class="note" for="case-rail">Worked example case<br><span style="font-size:12px">All step-by-step math uses this one</span></label>
+      <div class="chips" id="case-rail"></div>
+    </div>
+    <div class="railbox">
+      <button class="btn" id="b-copycsv" type="button">Copy results (CSV)</button>
+      <button class="btn" id="b-io" type="button">Save / load inputs</button>
+      <button class="btn" id="b-reset" type="button">Reset to M26 defaults</button>
+    </div>
+    <div class="dlg" id="io">
+      <label for="io-text" class="note">All inputs as JSON. Copy it out to save, or paste one in and press Load.</label>
+      <textarea id="io-text" spellcheck="false"></textarea>
+      <div class="chips"><button class="btn" id="io-copy" type="button">Copy</button><button class="btn primary" id="io-load" type="button">Load</button></div>
+    </div>
+  </aside>
+
+  <main>
+  <!-- ============ 00 ============ -->
+  <section class="step" id="overview">
+    <div class="eyebrow">Rear suspension load cases · trailing arm, 2 camber links, shock</div>
+    <h1>M26 Rear Load Cases</h1>
+    <p class="lede">This page answers one question: <b>when the car lands, corners, brakes or hits something, how hard is each rear suspension member pushed or pulled, and will it survive?</b> It answers it the same way you would by hand, one step at a time, and shows every equation with the real numbers in it.</p>
+
+    <div class="statement">
+      <div class="sub" style="border-top:0;padding-top:0">
+        <h3>How it works, in five moves</h3>
+        <ol class="moves">
+          <li><span><a href="#vehicle">Load on one tire.</a> From the car + driver weight and CG height, find the static load on one rear tire, and how much extra load shifts onto it per g of braking, accelerating or cornering.</span></li>
+          <li><span><a href="#cases">Tire force for each scenario.</a> Each load case (max bump, cornering, braking…) is a set of g's. Multiply them out to get a 3D force vector at the tire contact patch.</span></li>
+          <li><span><a href="#geometry">Hardpoints.</a> Take the CAD coordinates for the position the suspension is actually in for that case (bump, droop or ride height). Turn them into the direction each member points.</span></li>
+          <li><span><a href="#solve">Equilibrium solve.</a> The trailing arm and upright act as one rigid body. It's held by the TA pivot, two camber links and the shock. Because it isn't moving, the forces and the moments both sum to zero. That's 6 equations for 6 unknown forces, solved as a 6×6 matrix.</span></li>
+          <li><span><a href="#links">Check the parts.</a> A link being pulled is checked against yield, and a link being pushed against buckling. The peak force at every joint is collected for <a href="#jointloads">lug and bolt sizing</a>.</span></li>
+        </ol>
+      </div>
+      <div class="schem" aria-label="Schematic of the rear corner viewed from behind">
+        <svg viewBox="0 0 560 330" role="img" aria-labelledby="schem-t">
+          <title id="schem-t">Rear view schematic: chassis on the left, two camber links and a shock connect to the trailing arm and upright on the right; the tire force acts at the contact patch.</title>
+          <defs>
+            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" style="stroke:var(--muted)" stroke-width="1.2"/></pattern>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"/></marker>
+            <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+          </defs>
+          <rect x="20" y="30" width="46" height="250" style="fill:url(#hatch);stroke:var(--muted)"/>
+          <text x="43" y="22" text-anchor="middle" style="fill:var(--muted);font:12px var(--body)">chassis</text>
+          <!-- ground -->
+          <line x1="300" y1="300" x2="540" y2="300" style="stroke:var(--muted)" stroke-width="1.5"/>
+          <!-- tire -->
+          <rect x="420" y="60" width="64" height="240" rx="18" style="fill:none;stroke:var(--muted)" stroke-width="2"/>
+          <!-- upright -->
+          <rect x="384" y="118" width="20" height="96" rx="3" style="fill:var(--sheet);stroke:var(--ink)" stroke-width="2.5"/>
+          <text x="394" y="108" text-anchor="middle" style="fill:var(--ink);font:600 12px var(--body)">upright</text>
+          <!-- trailing arm (projects forward) -->
+          <line x1="250" y1="236" x2="394" y2="208" style="stroke:var(--accent)" stroke-width="7" stroke-linecap="round"/>
+          <text x="282" y="262" style="fill:var(--accent);font:600 12px var(--body)">trailing arm</text>
+          <circle cx="250" cy="236" r="9" style="fill:var(--sheet);stroke:var(--accent)" stroke-width="3"/>
+          <text x="196" y="290" style="fill:var(--muted);font:12px var(--body)">TA pivot (forward of axle)</text>
+          <!-- links -->
+          <line x1="66" y1="126" x2="384" y2="128" style="stroke:var(--ink)" stroke-width="3"/>
+          <line x1="66" y1="186" x2="384" y2="196" style="stroke:var(--ink)" stroke-width="3"/>
+          <circle cx="66" cy="126" r="4" style="fill:var(--ink)"/><circle cx="384" cy="128" r="4" style="fill:var(--ink)"/>
+          <circle cx="66" cy="186" r="4" style="fill:var(--ink)"/><circle cx="384" cy="196" r="4" style="fill:var(--ink)"/>
+          <text x="150" y="118" style="fill:var(--ink);font:12px var(--body)">upper camber link</text>
+          <text x="150" y="180" style="fill:var(--ink);font:12px var(--body)">lower camber link</text>
+          <!-- shock -->
+          <line x1="150" y1="34" x2="320" y2="222" style="stroke:var(--ink)" stroke-width="3" stroke-dasharray="7 4"/>
+          <circle cx="150" cy="34" r="4" style="fill:var(--ink)"/><circle cx="320" cy="222" r="4" style="fill:var(--ink)"/>
+          <text x="196" y="62" style="fill:var(--ink);font:12px var(--body)">shock</text>
+          <!-- unknowns -->
+          <line x1="300" y1="128" x2="250" y2="127" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#arA)"/>
+          <text x="262" y="146" style="fill:var(--accent);font:italic 600 14px var(--body)">F₁</text>
+          <line x1="300" y1="193" x2="250" y2="191" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#arA)"/>
+          <text x="262" y="214" style="fill:var(--accent);font:italic 600 14px var(--body)">F₂</text>
+          <line x1="300" y1="200" x2="270" y2="167" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#arA)"/>
+          <text x="282" y="166" style="fill:var(--accent);font:italic 600 14px var(--body)">F<tspan baseline-shift="sub" font-size="10">s</tspan></text>
+          <line x1="250" y1="236" x2="214" y2="214" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#arA)"/>
+          <text x="196" y="236" style="fill:var(--accent);font:italic 600 14px var(--body)">R</text>
+          <!-- tire force -->
+          <line x1="452" y1="300" x2="452" y2="236" style="stroke:var(--ink)" stroke-width="3" marker-end="url(#ar)"/>
+          <line x1="452" y1="300" x2="410" y2="300" style="stroke:var(--ink)" stroke-width="3" marker-end="url(#ar)"/>
+          <text x="462" y="250" style="fill:var(--ink);font:italic 600 14px var(--body)">F<tspan baseline-shift="sub" font-size="10">w</tspan></text>
+          <text x="462" y="318" style="fill:var(--muted);font:12px var(--body)">contact patch</text>
+          <!-- free body outline -->
+          <path d="M236,252 L240,214 L372,104 L414,104 L414,224 L300,248 Z" style="fill:none;stroke:var(--accent)" stroke-width="1.2" stroke-dasharray="3 4"/>
+          <text x="420" y="96" style="fill:var(--accent);font:12px var(--body)">free body</text>
+        </svg>
+        <div class="legendrow" style="padding:6px 4px 0"><span><i style="background:var(--accent)"></i>unknown forces we solve for</span><span><i style="background:var(--ink)"></i>known tire force</span></div>
+      </div>
+    </div>
+
+    <div class="whatwhy">
+      <div class="explain">
+        <h3>Assumptions behind the whole page</h3>
+        <ul>
+          <li><b>Quasi-static.</b> Each case is a frozen instant at peak load. The g's stand in for the dynamics.</li>
+          <li><b>Two-force members.</b> The camber links and the shock have rod ends or spherical bearings at both ends, so they can only push or pull along their own axis. No bending.</li>
+          <li><b>TA pivot is a ball joint.</b> It carries force but no moment. That's what makes the problem solvable by hand (statically determinate).</li>
+          <li><b>Rigid parts, one corner at a time,</b> with the tire force acting at the centre of the contact patch.</li>
+        </ul>
+      </div>
+      <div class="explain" style="border-left-color:var(--muted);background:var(--wash)">
+        <h3>How to read this page</h3>
+        <ul>
+          <li>Boxes with a <b>blue border</b> are inputs. Change any of them and everything below updates.</li>
+          <li><b>Grey panels</b> show the equations worked out for the case picked in the left rail (“Worked example case”).</li>
+          <li>Sign convention: links <span class="T">T = tension</span> (being pulled, +), <span class="C">C = compression</span> (being pushed, −).</li>
+          <li>Margin pills: <span class="pill ok">+0.25+</span> comfortable, <span class="pill warn">+0.10</span> tight, <span class="pill bad">−0.20</span> fails.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Results at a glance</h3>
+    <div class="tiles" id="summary"></div>
+    <div class="tablewrap"><table id="sumtable"></table></div>
+  </section>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="vehicle">
+    <div class="step-h"><span class="step-n">01</span><h2>Load on one rear tire</h2></div>
+    <div class="whatwhy">
+      <div><h4>What this step does</h4><p>Works out three numbers that every load case is built from: the static load on one rear tire, and how much load shifts onto that tire for every 1 g of longitudinal or lateral acceleration.</p></div>
+      <div><h4>Why weight shifts</h4><p>The car's mass sits at the CG, <span class="m" data-tex="h"></span> inches above the ground, but the tires push at ground level. When the car accelerates, that offset creates a moment, and the only way to balance it is for one axle (or side) to carry more load and the other less. A higher CG or a shorter wheelbase/track means more transfer.</p></div>
+    </div>
+    <div class="cols">
+      <div class="panel"><h3>Inputs</h3><div class="fields" id="veh-fields"></div>
+        <p class="note">Rear roll-stiffness share = the fraction of total lateral load transfer the rear axle takes. It depends on springs and anti-roll bars. 0.521 is a placeholder equal to the weight bias.</p></div>
+      <div class="work" id="veh-work"></div>
+    </div>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="cases">
+    <div class="step-h"><span class="step-n">02</span><h2>Load cases → tire contact-patch force</h2></div>
+    <div class="whatwhy">
+      <div><h4>What this step does</h4><p>Each load case describes one scenario as a few g multipliers. Those multipliers turn the step 01 numbers into a 3D force vector <span class="m" data-tex="\vec F_w = (F_x,\,F_y,\,F_z)"></span> that the ground pushes on the tire with.</p></div>
+      <div><h4>The model</h4><p>The vertical load comes first: the base load times the vertical g, plus weight transfer if the case has it. The tire's sideways and fore-aft grip forces are then that vertical load times the lateral and longitudinal g's.</p></div>
+    </div>
+    <div class="work">
+      <div class="eq c" data-tex="F_y = g_{\text{vert}}\,W_{\text{base}} \;+\; \underbrace{g_{\text{long}}\,\Delta W_{\text{long}} \;-\; g_{\text{lat}}\,\Delta W_{\text{lat}}}_{\text{weight transfer (only if “Transfer” is ticked)}} \qquad F_x = g_{\text{lat}}\,F_y \qquad F_z = g_{\text{long}}\,F_y"></div>
+      <dl class="vars">
+        <dt><span class="m" data-tex="W_{\text{base}}"></span></dt><dd>static corner load from step 01, or the whole car's weight for the one-wheel landing</dd>
+        <dt><span class="m" data-tex="g_{\text{long}}"></span></dt><dd>+ accelerating, − braking or impact (the tire force points rearward)</dd>
+        <dt><span class="m" data-tex="g_{\text{lat}}"></span></dt><dd>cornering g, negative for the outside wheel (the tire is pushed inboard, −X)</dd>
+      </dl>
+    </div>
+    <div class="tablewrap"><table id="case-table"></table></div>
+    <div class="chips"><button class="btn" id="add-case" type="button">+ Add load case</button></div>
+    <div class="sub">
+      <div class="sub-h"><span class="k">WORKED</span><h3 id="case-work-h">Worked example</h3></div>
+      <div class="work" id="case-work"></div>
+    </div>
+    <div class="look"><p><b>What to look for.</b> Compare the size of <span class="m" data-tex="|\vec F_w|"></span> across cases. One-Wheel Landing (5 g × the whole car on one tire) is about 4× every other case, so it drives almost every result below. Whether it's a real design case is a team decision.</p></div>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="geometry">
+    <div class="step-h"><span class="step-n">03</span><h2>Hardpoints &amp; member directions</h2></div>
+    <div class="whatwhy">
+      <div><h4>What this step does</h4><p>Takes the CAD coordinates of every joint and turns them into two things the solver needs:</p>
+        <ul><li><b>Unit vectors</b> <span class="m" data-tex="\vec u"></span>: the direction each member points. A two-force member can only push or pull along this line, so its whole force is one number times <span class="m" data-tex="\vec u"></span>.</li>
+        <li><b>Lever arms</b> <span class="m" data-tex="\vec r"></span>: where each force acts, measured from the TA pivot. These give the moments.</li></ul></div>
+      <div><h4>Which position?</h4><p>Each case uses the position the suspension would really be in: <b>max bump</b> for landings, <b>full droop</b> for braking (the rear unloads), <b>static ride height</b> for the rest. Each set can have its own CAD origin, because only differences between points are ever used.</p>
+        <p class="note">Axes: X lateral (+ outboard), Y vertical (+ up), Z longitudinal. Units: inches.</p></div>
+    </div>
+    <div class="work" id="geom-work"></div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Edit a coordinate set</h3>
+        <div class="chips" id="geom-chips"></div>
+        <div class="tablewrap"><table id="geom-table"></table></div>
+        <div class="chips"><button class="btn" id="b-paste" type="button">Paste 9 rows from CAD / Excel</button></div>
+        <div class="dlg" id="paste-dlg">
+          <label class="note" for="paste-text">Paste 9 rows of X Y Z (tab, comma or space separated) in this order: TA IN, TA OUT, UCL IN, UCL OUT, LCL IN, LCL OUT, Shock IN, Shock OUT, Contact.</label>
+          <textarea id="paste-text" spellcheck="false"></textarea>
+          <div class="chips"><button class="btn primary" id="paste-apply" type="button">Apply to this set</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>3D view of that set</h3>
+        <div class="viewer" id="v-geom"><canvas></canvas><div class="hint">Drag to rotate · scroll to zoom</div><div class="vtools"><button class="btn" data-view="front" type="button">Rear</button><button class="btn" data-view="side" type="button">Side</button><button class="btn" data-view="iso" type="button">Iso</button></div></div>
+        <p class="note">Squares are chassis-side points, circles are on the trailing arm/upright. The blue triangle is the trailing arm.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="solve">
+    <div class="step-h"><span class="step-n">04</span><h2>Equilibrium solve: 6 equations, 6 unknowns</h2></div>
+    <p class="lede">This is the heart of the page. Everything before it sets up the numbers. Everything after it checks the parts using the forces found here.</p>
+
+    <div class="sub" style="border-top:0">
+      <div class="sub-h"><span class="k">4.1</span><h3>Draw the free body</h3></div>
+      <p>Cut the trailing arm + upright out as one rigid piece (dashed outline in the schematic up top). Five things act on it:</p>
+      <dl class="vars">
+        <dt><span class="m" data-tex="\vec F_w"></span></dt><dd>the tire force from step 02, <b>known</b></dd>
+        <dt><span class="m" data-tex="\vec R = (R_x, R_y, R_z)"></span></dt><dd>the TA pivot reaction. A ball joint can push in any direction, so it has 3 unknowns</dd>
+        <dt><span class="m" data-tex="F_1\,\vec u_1"></span></dt><dd>the upper camber link: 1 unknown <span class="m" data-tex="F_1"></span> along its known direction</dd>
+        <dt><span class="m" data-tex="F_2\,\vec u_2"></span></dt><dd>the lower camber link: 1 unknown <span class="m" data-tex="F_2"></span></dd>
+        <dt><span class="m" data-tex="F_s\,\vec u_3"></span></dt><dd>the shock: 1 unknown <span class="m" data-tex="F_s"></span></dd>
+      </dl>
+      <p>That's <b>6 unknowns</b>. In 3D a rigid body has exactly 6 equilibrium equations, so the problem is solvable.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-h"><span class="k">4.2</span><h3>Forces must add to zero (3 equations)</h3></div>
+      <p>The part isn't accelerating, so every force on it sums to zero. This is one vector equation, which is three scalar equations (x, y, z).</p>
+      <div class="work"><div class="eq c" data-tex="\sum \vec F = \vec R + F_1\,\vec u_1 + F_2\,\vec u_2 + F_s\,\vec u_3 + \vec F_w = \vec 0"></div></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-h"><span class="k">4.3</span><h3>Moments about the pivot must add to zero (3 more)</h3></div>
+      <p>It isn't rotating either, so the moments sum to zero. We take moments <b>about the TA pivot</b> on purpose: <span class="m" data-tex="\vec R"></span> acts right at the pivot, so its lever arm is zero and it drops out. The 3 moment equations then only involve <span class="m" data-tex="F_1, F_2, F_s"></span>.</p>
+      <div class="work">
+        <div class="eq c" data-tex="\sum \vec M_{\text{pivot}} = F_1\,(\vec r_1 \times \vec u_1) + F_2\,(\vec r_2 \times \vec u_2) + F_s\,(\vec r_s \times \vec u_3) + \vec r_c \times \vec F_w = \vec 0"></div>
+        <p class="note">Each <span class="m" data-tex="\vec r \times \vec u"></span> is a number you can read physically: the moment (lbf·in) that <b>1 lbf</b> in that member makes about the pivot. For this case:</p>
+        <div id="cross-work"></div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-h"><span class="k">4.4</span><h3>Stack the 6 equations into a matrix</h3></div>
+      <p>Line all six up so each unknown gets its own column. In block form:</p>
+      <div class="work"><div class="eq c" data-tex="\underbrace{\begin{bmatrix} \mathbf{I}_{3\times3} & \vec u_1 & \vec u_2 & \vec u_3 \\[2pt] \mathbf{0}_{3\times3} & \vec r_1\times\vec u_1 & \vec r_2\times\vec u_2 & \vec r_s\times\vec u_3 \end{bmatrix}}_{A\;(6\times6)} \underbrace{\begin{bmatrix} \vec R \\ F_1 \\ F_2 \\ F_s \end{bmatrix}}_{x} = \underbrace{\begin{bmatrix} -\vec F_w \\[2pt] -\,\vec r_c\times\vec F_w \end{bmatrix}}_{b}"></div></div>
+      <p>Top three rows are 4.2 (forces), bottom three are 4.3 (moments). The <span class="m" data-tex="\mathbf{0}"></span> block is the pivot dropping out of the moment equations. Everything known (the tire force) has moved to the right-hand side. With this case's numbers:</p>
+      <div class="work" id="matrix-work"></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-h"><span class="k">4.5</span><h3>Solve and read the answer</h3></div>
+      <div class="work" id="solve-work"></div>
+      <div class="cols">
+        <div class="panel">
+          <div class="tiles" id="solve-tiles"></div>
+          <p class="note">Signs: a link force + means the link is being <span class="T">pulled (tension)</span>, − means <span class="C">pushed (compression)</span>. The shock's vector points from chassis to trailing arm, so + means the shock is being compressed, which is what you'd expect it to be doing.</p>
+        </div>
+        <div class="panel">
+          <div class="viewer" id="v-solve"><canvas></canvas><div class="hint">Arrows = forces acting on the TA/upright · drag to rotate</div><div class="vtools"><button class="btn" data-view="front" type="button">Rear</button><button class="btn" data-view="side" type="button">Side</button><button class="btn" data-view="iso" type="button">Iso</button></div></div>
+          <div class="legend"><span><i style="background:var(--ink)"></i>Tire force</span><span><i style="background:var(--tension)"></i>Tension</span><span><i style="background:var(--compress)"></i>Compression</span><span><i style="background:var(--muted)"></i>Pivot reaction</span></div>
+        </div>
+      </div>
+      <h3>All cases</h3>
+      <div class="tablewrap"><table id="allforces"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="upright">
+    <div class="step-h"><span class="step-n">05</span><h2>Upright → trailing arm joint</h2></div>
+    <div class="whatwhy">
+      <div><h4>What this step does</h4><p>Now cut the upright away from the trailing arm. The upright has three loads on it: the tire force and the two camber-link forces. Whatever doesn't cancel out has to be carried by the bolted joint at TA OUT, as a force and a moment.</p></div>
+      <div><h4>Why you want it</h4><p>This is the load case for the TA–upright bolts and for the outboard end of the trailing arm. Use these vectors as the load in FEA of the trailing arm.</p></div>
+    </div>
+    <div class="work">
+      <div class="eq c" data-tex="\vec F_{\text{TA}} = F_1\,\vec u_1 + F_2\,\vec u_2 + \vec F_w \qquad\qquad \vec M_{\text{TA}} = \sum_i \left(\vec P_i - \vec P_{\text{TA,out}}\right) \times \vec F_i"></div>
+      <p class="note">The sum runs over the three upright loads, each crossed with its own lever arm from TA OUT. The old sheet crossed the link lever arms with the tire force by mistake.</p>
+      <div id="upright-work"></div>
+    </div>
+    <div class="tablewrap"><table id="upright-table"></table></div>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="links">
+    <div class="step-h"><span class="step-n">06</span><h2>Camber link checks: yield and buckling</h2></div>
+    <div class="whatwhy">
+      <div><h4>Pulled (tension)</h4><p>A link in tension fails by yielding, so the allowable stress is just the material's yield strength <span class="m" data-tex="S_y"></span>.</p></div>
+      <div><h4>Pushed (compression)</h4><p>A long, thin link in compression bows sideways and buckles well before it yields. How badly depends on its <b>slenderness</b> <span class="m" data-tex="\lambda = KL/r"></span>. Short columns use the <b>Johnson</b> formula, long ones use <b>Euler</b>. The crossover is <span class="m" data-tex="\lambda_t"></span>, and the page picks the right formula for you.</p></div>
+    </div>
+    <div class="work">
+      <div class="eq c" data-tex="\lambda_t = \sqrt{\frac{2\pi^2 E}{S_y}} \qquad \sigma_{cr} = \begin{cases} S_y - \dfrac{S_y^2}{4\pi^2 E}\,\lambda^2 & \lambda < \lambda_t \;\;\text{(Johnson)}\\[8pt] \dfrac{\pi^2 E}{\lambda^2} & \lambda \ge \lambda_t \;\;\text{(Euler)} \end{cases}"></div>
+      <div class="eq c" data-tex="\text{FoS} = \frac{\sigma_{\text{allow}}}{\sigma} \qquad \text{Margin} = \frac{\text{FoS}}{\text{design factor}} - 1 \quad(\ge 0 \text{ passes})"></div>
+    </div>
+    <div class="cols">
+      <div class="panel"><h3>Upper link</h3><div class="fields" id="lu-fields"></div></div>
+      <div class="panel"><h3>Lower link</h3><div class="fields" id="ll-fields"></div></div>
+      <div class="panel"><h3>Check settings</h3><div class="fields" id="chk-fields"></div>
+        <p class="note">K = 1 means pinned–pinned (rod ends both sides). The design factor is the minimum FoS you require.</p>
+        <div class="chips"><button class="btn" id="preset-bar" type="button">Try 7075 Ø0.6875 solid bar</button><button class="btn" id="preset-orig" type="button">Back to original tubes</button></div>
+      </div>
+    </div>
+    <div class="sub">
+      <div class="sub-h"><span class="k">WORKED</span><h3 id="link-work-h">Worked example</h3></div>
+      <div class="work" id="lu-work"></div><div class="work" id="ll-work"></div>
+    </div>
+    <div class="tablewrap"><table id="link-table"></table></div>
+    <div class="panel chart">
+      <h3>Column curve: where each case sits</h3>
+      <div class="chips" id="curve-chips"></div>
+      <canvas id="curve"></canvas>
+      <p class="note">The blue line is the allowable compressive stress for this link at any slenderness: Johnson up to the transition, Euler after it. All cases share the same link, so they sit on one vertical line at its slenderness. Each dot is (applied stress × design factor) for a case where the link is in compression. A dot above the blue line fails. To pass, raise the curve (stiffer or stronger material) or move left (bigger r, shorter L).</p>
+    </div>
+    <div class="look"><p><b>What to look for.</b> The upper link is in compression in the landing cases, and that's where buckling governs. Its slenderness (~78) is past the aluminum transition (~70), so it's in the Euler region, where only <b>E</b> and <b>r</b> help. A stronger alloy of aluminum does nothing there.</p></div>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="jointloads">
+    <div class="step-h"><span class="step-n">07</span><h2>Design loads for joints</h2></div>
+    <div class="whatwhy">
+      <div><h4>What this step does</h4><p>Scans every case ticked “Use for joints” in step 02 and pulls out the peak load at each joint, along with which case caused it. These are the numbers to size lugs, bolts, rod ends and brackets with. Lug and bolt checks will live on their own page.</p></div>
+      <div><h4>Why tension and compression are separate</h4><p>A lug is checked differently depending on direction. Tension drives tear-out and net-section failure, while compression mostly loads the bearing face. So both peaks are listed for each two-force member.</p></div>
+    </div>
+    <div class="tablewrap"><table id="joint-table"></table></div>
+    <div class="chips"><button class="btn" id="b-copyjoints" type="button">Copy design loads</button></div>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="changes">
+    <div class="step-h"><span class="step-n">08</span><h2>What was fixed from Rear_Load_Cases_4.xlsx</h2></div>
+    <p>The 6×6 solve itself was right: with the original inputs, this page reproduces the old sheet's link, shock and pivot forces to within 0.000001 lbf. The problems were in the bookkeeping around it.</p>
+    <ul class="issues">
+      <li><b class="n">1</b><span><b>UCL one-wheel row used steel properties.</b> Results!Q17/S17 pointed at an empty F12, so the 6061 tube got 4130 yield and modulus. With aluminum it actually fails in buckling (step 06).</span></li>
+      <li><b class="n">2</b><span><b>Upright moment used the wrong force.</b> The UCL/LCL moment rows crossed their lever arms with the tire force instead of the link forces. Fixed in step 05.</span></li>
+      <li><b class="n">3</b><span><b>Trailing arm pivot “stress” was garbage.</b> It divided by the UCL's area or by empty cells. The pivot is now reported as a force (steps 04 and 07).</span></li>
+      <li><b class="n">4</b><span><b>Inconsistent link inputs.</b> One LCL row was 6061 while the rest were 4130, and one UCL row had a 0.63 ID instead of 0.62. Each link now has one material and one section.</span></li>
+      <li><b class="n">5</b><span><b>Johnson used past its range.</b> The aluminum links sit above the Johnson/Euler transition, so Euler applies. The formula is now picked automatically.</span></li>
+      <li><b class="n">6</b><span><b>Bolts &amp; lugs moved out.</b> The old Bolts&amp;Lugs tab had a hard-coded shock force, a degrees/radians bug in shear tear-out (<span class="m" data-tex="\sin(\varphi\cdot 180/\pi)"></span> should be <span class="m" data-tex="\sin(\varphi\cdot \pi/180)"></span>), and 16 TPI used for the 5/16"-18 preload. Fix those on the lug page, fed by step 07.</span></li>
+    </ul>
+    <p class="note">Still assumptions, not bugs: the rear roll-stiffness share equals the weight bias (0.521) until you have real roll stiffness numbers. μ = 0.85 from the M25 test isn't used, because grip is set by each case's g's. Tension and compression yield are taken as equal, which is fine for these alloys.</p>
+  </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ===== Rear load case engine (pure functions, no DOM) =====
+// Units: inches, lbf, psi. Axes: X lateral (+ outboard), Y vertical (+ up), Z longitudinal.
+const LBF_TO_N = 4.448222;
+const PSI_TO_MPA = 0.00689476;
+
+const MATERIALS = {
+  '6061-T6 Al':      { Sy: 40000, E: 10.0e6 },
+  '7075-T6 Al':      { Sy: 73000, E: 10.4e6 },
+  '4130 Steel (N)':  { Sy: 63100, E: 29.7e6 },
+};
+
+const POINT_KEYS = [
+  ['taIn',   'TA pivot (TA IN)'],
+  ['taOut',  'TA OUT (upright mount)'],
+  ['uclIn',  'Upper link IN'],
+  ['uclOut', 'Upper link OUT'],
+  ['lclIn',  'Lower link IN'],
+  ['lclOut', 'Lower link OUT'],
+  ['shIn',   'Shock IN (chassis)'],
+  ['shOut',  'Shock OUT (TA)'],
+  ['contact','Tire contact patch'],
+];
+
+const DEFAULTS = {
+  vehicle: {
+    carWeight: 437, driverWeight: 165, rearBias: 0.521, rearWheels: 2,
+    cgh: 25.2, wheelbase: 58, track: 60, rearRollDist: 0.521,
+  },
+  geometry: {
+    bump: { label: 'Max bump', pts: {
+      taIn:[-93.6,14.02,115.36], taOut:[-85.93,19.12,94.11],
+      uclIn:[-103.15,14.72,89.27], uclOut:[-85.74,21.58,92.87],
+      lclIn:[-103.15,11.72,89.66], lclOut:[-85.36,18.59,91.39],
+      shIn:[-91.04,27.51,112.35], shOut:[-88.7,18.34,101.62],
+      contact:[-81.78,9.23,89.05] } },
+    static: { label: 'Static ride height', pts: {
+      taIn:[35.35,54.78,58.65], taOut:[43.71,49.72,37.65],
+      uclIn:[25.8,55.48,32.55], uclOut:[44.17,51.4,35.5],
+      lclIn:[25.8,52.48,32.95], lclOut:[44.25,48.04,35.44],
+      shIn:[37.9,68.28,55.64], shOut:[40.81,52.44,44.64],
+      contact:[46.85,38.29,37.43] } },
+    droop: { label: 'Full droop', pts: {
+      taIn:[-93.6,14.02,115.36], taOut:[-86.32,5.98,94.9],
+      uclIn:[-103.15,14.72,89.27], uclOut:[-85.88,7.34,92.54],
+      lclIn:[-103.15,11.72,89.66], lclOut:[-85.93,4.0,92.91],
+      shIn:[-91.04,27.51,112.35], shOut:[-88.82,9.68,101.58],
+      contact:[-83.6,-5.51,96.04] } },
+  },
+  // Wheel force model (per case):
+  //   base   = static corner load, or total vehicle weight (basis = 'total')
+  //   Fy     = vertG*base + [transfer ? longT*longG - latT*latG : 0]
+  //   Fx     = latG * Fy        (lateral tire force)
+  //   Fz     = longG * Fy       (longitudinal tire force)
+  cases: [
+    { id:'bump',    name:'Max Bump',            geom:'bump',   basis:'corner', vertG:5, longG:0,    latG:0,    transfer:false,
+      why:'Landing a jump: 5 g vertical on one rear corner.' },
+    { id:'onewheel',name:'One-Wheel Landing',   geom:'bump',   basis:'total',  vertG:5, longG:0,    latG:0,    transfer:false,
+      why:'Worst case: the whole car (5 g) lands on one wheel. Very conservative.' },
+    { id:'corner',  name:'Cornering',           geom:'static', basis:'corner', vertG:1, longG:0,    latG:-1.1, transfer:true,
+      why:'1.1 g turn, outside rear wheel. Lateral weight transfer adds load.' },
+    { id:'brake',   name:'Max Brake',           geom:'droop',  basis:'corner', vertG:1, longG:-0.6, latG:0,    transfer:true,
+      why:'0.6 g braking. Rear unloads toward droop; tire drags backward.' },
+    { id:'accel',   name:'Max Accel',           geom:'static', basis:'corner', vertG:1, longG:0.3,  latG:0,    transfer:true,
+      why:'0.3 g acceleration. Weight shifts onto the rear.' },
+    { id:'impact',  name:'Frontal Impact',      geom:'static', basis:'corner', vertG:1, longG:-3,   latG:0,    transfer:false,
+      why:'Wheel hits an obstacle: 3× corner load pushing rearward. No weight transfer.' },
+  ],
+  links: {
+    upper: { name:'Upper camber link', mat:'6061-T6 Al',     section:'tube', od:0.75, id:0.62 },
+    lower: { name:'Lower camber link', mat:'4130 Steel (N)', section:'tube', od:0.75, id:0.63 },
+  },
+  check: { designFactor: 1.5, K: 1.0 },
+};
+
+// ---------- vector helpers ----------
+const sub = (a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const add = (a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const scl = (a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot = (a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const norm = a=>Math.sqrt(dot(a,a));
+const unit = a=>scl(a,1/norm(a));
+
+// ---------- step 1: vehicle ----------
+function vehicleLoads(v){
+  const W = v.carWeight + v.driverWeight;
+  const corner = W*v.rearBias/v.rearWheels;
+  const longT = W*v.cgh/v.wheelbase/v.rearWheels;
+  const latT  = W*v.cgh/v.track*v.rearRollDist;
+  return { W, corner, longT, latT };
+}
+
+// ---------- step 2: wheel force ----------
+function wheelForce(c, vl){
+  const base = c.basis==='total' ? vl.W : vl.corner;
+  const transferY = c.transfer ? (vl.longT*c.longG - vl.latT*c.latG) : 0;
+  const Fy = c.vertG*base + transferY;
+  return { base, transferY, Fx: c.latG*Fy, Fy, Fz: c.longG*Fy };
+}
+
+// ---------- linear solve (Gaussian elimination, partial pivot) ----------
+function solveLinear(A, b){
+  const n=b.length, M=A.map((r,i)=>[...r,b[i]]);
+  for(let k=0;k<n;k++){
+    let p=k; for(let i=k+1;i<n;i++) if(Math.abs(M[i][k])>Math.abs(M[p][k])) p=i;
+    if(Math.abs(M[p][k])<1e-12) return null;
+    [M[k],M[p]]=[M[p],M[k]];
+    for(let i=k+1;i<n;i++){ const f=M[i][k]/M[k][k]; for(let j=k;j<=n;j++) M[i][j]-=f*M[k][j]; }
+  }
+  const x=new Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){ let s=M[i][n]; for(let j=i+1;j<n;j++) s-=M[i][j]*x[j]; x[i]=s/M[i][i]; }
+  return x;
+}
+
+// ---------- step 3/4: statics ----------
+function solveCase(c, state){
+  const vl = vehicleLoads(state.vehicle);
+  const wf = wheelForce(c, vl);
+  const P = state.geometry[c.geom].pts;
+  const Fw = [wf.Fx, wf.Fy, wf.Fz];
+  // unit vectors: links point OUT -> IN (positive force = tension), shock points IN -> OUT (positive = compression)
+  const uclVec = sub(P.uclIn, P.uclOut), lclVec = sub(P.lclIn, P.lclOut), shVec = sub(P.shOut, P.shIn);
+  const u1 = unit(uclVec), u2 = unit(lclVec), u3 = unit(shVec);
+  const ru = sub(P.uclOut, P.taIn), rl = sub(P.lclOut, P.taIn), rs = sub(P.shOut, P.taIn), rc = sub(P.contact, P.taIn);
+  const m1 = cross(ru,u1), m2 = cross(rl,u2), m3 = cross(rs,u3), mw = cross(rc,Fw);
+  const A = [
+    [1,0,0, u1[0],u2[0],u3[0]],
+    [0,1,0, u1[1],u2[1],u3[1]],
+    [0,0,1, u1[2],u2[2],u3[2]],
+    [0,0,0, m1[0],m2[0],m3[0]],
+    [0,0,0, m1[1],m2[1],m3[1]],
+    [0,0,0, m1[2],m2[2],m3[2]],
+  ];
+  const b = [-Fw[0],-Fw[1],-Fw[2],-mw[0],-mw[1],-mw[2]];
+  const x = solveLinear(A,b);
+  if(!x) return { error:'Matrix is singular: two members are lined up or a hardpoint is duplicated.', c, wf, P };
+  const [Rx,Ry,Rz,F1,F2,Fs] = x;
+  const R=[Rx,Ry,Rz];
+  // equilibrium residual check
+  const sumF = add(add(add(add(R, scl(u1,F1)), scl(u2,F2)), scl(u3,Fs)), Fw);
+  const sumM = add(add(add(cross(ru,scl(u1,F1)), cross(rl,scl(u2,F2))), cross(rs,scl(u3,Fs))), mw);
+  // upright free body -> loads into trailing arm at TA OUT
+  const fU = scl(u1,F1), fL = scl(u2,F2);
+  const toTA = add(add(fU,fL),Fw);
+  const momTA = add(add(cross(sub(P.uclOut,P.taOut),fU), cross(sub(P.lclOut,P.taOut),fL)), cross(sub(P.contact,P.taOut),Fw));
+  return {
+    c, vl, wf, P, Fw, u1,u2,u3, ru,rl,rs,rc, m1,m2,m3, mw, A, b, x,
+    R, Rmag:norm(R), F1, F2, Fs,
+    Lu:norm(uclVec), Ll:norm(lclVec), Ls:norm(shVec),
+    residF:norm(sumF), residM:norm(sumM),
+    toTA, toTAmag:norm(toTA), momTA, momTAmag:norm(momTA),
+  };
+}
+
+// ---------- step 5: member check ----------
+function sectionProps(l){
+  const id = l.section==='bar' ? 0 : l.id;
+  const A = Math.PI*(l.od**2 - id**2)/4;
+  const I = Math.PI*(l.od**4 - id**4)/64;
+  return { A, I, r: Math.sqrt(I/A) };
+}
+function checkLink(F, L, link, chk){
+  const m = MATERIALS[link.mat], s = sectionProps(link);
+  const stress = Math.abs(F)/s.A;
+  const tension = F>=0;
+  const slender = chk.K*L/s.r;
+  const transition = Math.sqrt(2*Math.PI**2*m.E/m.Sy);
+  const euler = Math.PI**2*m.E/slender**2;
+  const johnson = m.Sy - (m.Sy**2/(4*Math.PI**2*m.E))*slender**2;
+  const regime = slender < transition ? 'Johnson' : 'Euler';
+  const buckle = regime==='Johnson' ? johnson : euler;
+  const allow = tension ? m.Sy : Math.min(buckle, m.Sy);
+  const fos = stress>0 ? allow/stress : Infinity;
+  const margin = fos/chk.designFactor - 1;
+  return { F, L, stress, tension, slender, transition, euler, johnson, regime, buckle, allow, fos, margin, mat:m, sec:s,
+           Pcr: buckle*s.A };
+}
+
+// ---------- run everything ----------
+function runAll(state){
+  const vl = vehicleLoads(state.vehicle);
+  const cases = state.cases.map(c=>solveCase(c,state));
+  const checks = cases.map(r=> r.error ? null : ({
+    upper: checkLink(r.F1, r.Lu, state.links.upper, state.check),
+    lower: checkLink(r.F2, r.Ll, state.links.lower, state.check),
+  }));
+  const ok = cases.filter(r=>!r.error && r.c.env!==false);
+  // envelope: largest value of fn over included cases, with the case that produced it
+  const env = (fn)=>{ let best={v:0,name:'—',r:null}; ok.forEach(r=>{ const v=fn(r); if(v>best.v) best={v,name:r.c.name,r}; }); return best; };
+  const joints = {
+    uclT: env(r=>Math.max(0,r.F1)),  uclC: env(r=>Math.max(0,-r.F1)),
+    lclT: env(r=>Math.max(0,r.F2)),  lclC: env(r=>Math.max(0,-r.F2)),
+    shC:  env(r=>Math.max(0,r.Fs)),  shT:  env(r=>Math.max(0,-r.Fs)),
+    pivot: env(r=>r.Rmag), taF: env(r=>r.toTAmag), taM: env(r=>r.momTAmag),
+  };
+  return { vl, cases, checks, joints };
+}
+
+if (typeof module !== 'undefined') module.exports = { DEFAULTS, MATERIALS, runAll, solveCase, checkLink, vehicleLoads, wheelForce, LBF_TO_N };
+
+</script>
+<script>
+(function(){
+'use strict';
+const clone = o=>JSON.parse(JSON.stringify(o));
+const LS_KEY='m26-rear-loadcases-v2';
+let state = clone(DEFAULTS);
+try{ const s=localStorage.getItem(LS_KEY); if(s){ const p=JSON.parse(s); if(p && p.vehicle && p.cases && p.geometry && p.links) state=p; } }catch(e){}
+let selCase=0, selGeom='bump', curveLink='upper', out=null;
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = (v,d=1)=>{ if(v===Infinity) return '∞'; if(!isFinite(v)) return '—'; if(Math.abs(v)<0.5*10**-d) v=0; return v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); };
+const F = (v,d=0)=>fmt(v,d);
+// TeX number helpers
+const n = (v,d=1)=>fmt(v,d).replace(/,/g,'{,}');
+const p = (v,d=1)=> v<0 ? `(${n(v,d)})` : n(v,d);
+const tv = (a,d=2)=>`(${a.map(x=>n(x,d)).join(',\\;')})`;
+const cv = (a,d=2)=>`\\begin{bmatrix}${a.map(x=>n(x,d)).join('\\\\')}\\end{bmatrix}`;
+const T = (tex,cls='')=>`<div class="eq ${cls}" data-tex="${esc(tex)}"></div>`;
+const Ti = tex=>`<span class="m" data-tex="${esc(tex)}"></span>`;
+const pill = m => m>=0.25 ? `<span class="pill ok">+${fmt(m,2)}</span>` : m>=0 ? `<span class="pill warn">+${fmt(m,2)}</span>` : `<span class="pill bad">${fmt(m,2)}</span>`;
+const tc = v=> v>=0 ? '<span class="T">T</span>' : '<span class="C">C</span>';
+function getPath(o,p){ return p.split('.').reduce((a,k)=>a==null?a:a[k],o); }
+function setPath(o,p,v){ const k=p.split('.'); const last=k.pop(); const t=k.reduce((a,x)=>a[x],o); t[last]=v; }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),1700); }
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+// ---------- math rendering ----------
+function renderMath(root){
+  root=root||document;
+  const ready = window.MathJax && MathJax.tex2svg;
+  root.querySelectorAll('[data-tex]').forEach(el=>{
+    const tex=el.getAttribute('data-tex');
+    if(el.__tex===tex && el.__ok) return;
+    const display = el.classList.contains('eq');
+    if(ready){
+      try{ const node=MathJax.tex2svg(tex,{display}); el.replaceChildren(node); el.__ok=true; el.classList.remove('raw'); }
+      catch(e){ el.textContent=tex; el.classList.add('raw'); }
+    } else { el.textContent=tex; el.classList.add('raw'); el.__ok=false; }
+    el.__tex=tex;
+  });
+}
+window.__renderMath=()=>renderMath(document);
+
+// ---------- fields ----------
+function field(path,label,unit,step='any',kind='number',opts){
+  const id='f_'+path.replace(/\W/g,'_');
+  const v=getPath(state,path);
+  let ctl;
+  if(kind==='select') ctl=`<select id="${id}" data-bind="${path}" data-kind="text">${opts.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  else ctl=`<input id="${id}" type="number" step="${step}" value="${v}" data-bind="${path}">`;
+  return `<div class="field"><label for="${id}">${label}</label><div class="row">${ctl}<span class="unit">${unit||''}</span></div></div>`;
+}
+function buildFields(){
+  $('#veh-fields').innerHTML = [
+    field('vehicle.carWeight','Car weight','lbf'), field('vehicle.driverWeight','Driver weight','lbf'),
+    field('vehicle.rearBias','Rear weight bias','','0.001'), field('vehicle.rearWheels','Rear wheels','','1'),
+    field('vehicle.cgh','CG height  h','in'), field('vehicle.wheelbase','Wheelbase  L','in'),
+    field('vehicle.track','Rear track  t','in'), field('vehicle.rearRollDist','Rear roll-stiffness share','','0.001'),
+  ].join('');
+  const mats=Object.keys(MATERIALS);
+  for(const [k,el] of [['upper','#lu-fields'],['lower','#ll-fields']]){
+    const L=state.links[k];
+    $(el).innerHTML = [
+      field(`links.${k}.mat`,'Material','','any','select',mats),
+      field(`links.${k}.section`,'Section','','any','select',['tube','bar']),
+      field(`links.${k}.od`,'Outer dia','in','0.001'),
+      L.section==='tube' ? field(`links.${k}.id`,'Inner dia','in','0.001') : '',
+    ].join('');
+  }
+  $('#chk-fields').innerHTML = field('check.designFactor','Design factor (min FoS)','','0.1') + field('check.K','Effective length K','','0.05');
+}
+function buildCaseTable(){
+  const geoms=Object.keys(state.geometry);
+  let h=`<thead><tr><th>Case</th><th>Suspension position</th><th>Base load</th><th class="num">g vert</th><th class="num">g long</th><th class="num">g lat</th><th>Transfer</th><th>Use for joints</th><th></th></tr></thead><tbody>`;
+  state.cases.forEach((c,i)=>{
+    h+=`<tr class="${i===selCase?'sel':''}">
+      <td><input type="text" aria-label="Case name" value="${esc(c.name)}" data-bind="cases.${i}.name" data-kind="text"></td>
+      <td><select aria-label="Suspension position" data-bind="cases.${i}.geom" data-kind="text">${geoms.map(g=>`<option value="${g}"${g===c.geom?' selected':''}>${esc(state.geometry[g].label)}</option>`).join('')}</select></td>
+      <td><select aria-label="Base load" data-bind="cases.${i}.basis" data-kind="text"><option value="corner"${c.basis==='corner'?' selected':''}>Corner static</option><option value="total"${c.basis==='total'?' selected':''}>Whole car</option></select></td>
+      <td class="num"><input type="number" step="0.1" aria-label="Vertical g" value="${c.vertG}" data-bind="cases.${i}.vertG"></td>
+      <td class="num"><input type="number" step="0.1" aria-label="Longitudinal g" value="${c.longG}" data-bind="cases.${i}.longG"></td>
+      <td class="num"><input type="number" step="0.1" aria-label="Lateral g" value="${c.latG}" data-bind="cases.${i}.latG"></td>
+      <td><input type="checkbox" aria-label="Weight transfer" ${c.transfer?'checked':''} data-bind="cases.${i}.transfer" data-kind="bool"></td>
+      <td><input type="checkbox" aria-label="Use for joint loads" ${c.env!==false?'checked':''} data-bind="cases.${i}.env" data-kind="bool"></td>
+      <td><button class="btn" data-del="${i}" type="button" aria-label="Delete ${esc(c.name)}">✕</button></td></tr>
+      <tr class="${i===selCase?'sel':''}"><td colspan="9" class="wrap" style="padding-top:0">${esc(c.why||'')} <span class="mono" style="color:var(--ink);white-space:nowrap" id="cf-${i}"></span></td></tr>`;
+  });
+  $('#case-table').innerHTML = h+'</tbody>';
+}
+function buildGeomTable(){
+  const P=state.geometry[selGeom].pts;
+  let h='<thead><tr><th>Point</th><th class="num">X</th><th class="num">Y</th><th class="num">Z</th></tr></thead><tbody>';
+  POINT_KEYS.forEach(([k,l])=>{ h+=`<tr><td>${l.replace(/ \(.*\)/,'')}</td>${[0,1,2].map(j=>`<td class="num"><input type="number" step="0.01" aria-label="${l} ${'XYZ'[j]}" value="${P[k][j]}" data-bind="geometry.${selGeom}.pts.${k}.${j}"></td>`).join('')}</tr>`; });
+  $('#geom-table').innerHTML=h+'</tbody>';
+  $('#geom-chips').innerHTML = Object.entries(state.geometry).map(([k,g])=>`<button class="chip${k===selGeom?' on':''}" data-geom="${k}" type="button">${esc(g.label)}</button>`).join('');
+}
+function buildChips(){
+  if(selCase>=state.cases.length) selCase=0;
+  $('#case-rail').innerHTML = state.cases.map((c,i)=>`<button class="chip${i===selCase?' on':''}" data-case="${i}" type="button">${esc(c.name)}</button>`).join('');
+  $('#curve-chips').innerHTML = ['upper','lower'].map(k=>`<button class="chip${k===curveLink?' on':''}" data-curve="${k}" type="button">${k==='upper'?'Upper link':'Lower link'}</button>`).join('');
+}
+function rebuild(){ buildFields(); buildCaseTable(); buildGeomTable(); buildChips(); recompute(); }
+
+// ---------- recompute ----------
+function recompute(){
+  out = runAll(state);
+  save();
+  renderVehicle(); renderCases(); renderGeom(); renderSolve(); renderUpright(); renderLinks(); renderJoints(); renderSummary();
+  renderMath(document);
+  views.geom.draw(); views.solve.draw(); drawCurve();
+}
+let rq=null; function schedule(){ clearTimeout(rq); rq=setTimeout(recompute,60); }
+
+function renderVehicle(){
+  const v=state.vehicle, l=out.vl;
+  $('#veh-work').innerHTML = `
+    <div class="tag">Total weight</div>
+    ${T(`W = W_{\\text{car}} + W_{\\text{driver}} = ${n(v.carWeight,0)} + ${n(v.driverWeight,0)} = \\mathbf{${n(l.W,0)}}\\ \\text{lbf}`)}
+    <div class="tag">Static load on one rear tire (rear share of weight, split over the rear wheels)</div>
+    ${T(`W_c = \\frac{W \\cdot b_r}{n_r} = \\frac{${n(l.W,0)} \\times ${n(v.rearBias,3)}}{${n(v.rearWheels,0)}} = \\mathbf{${n(l.corner,1)}}\\ \\text{lbf}`)}
+    <div class="tag">Longitudinal transfer onto one rear tire, per 1 g (+ accel loads the rear, − braking unloads it)</div>
+    ${T(`\\Delta W_{\\text{long}} = \\frac{W\\,h}{L\\,n_r} = \\frac{${n(l.W,0)} \\times ${n(v.cgh,1)}}{${n(v.wheelbase,1)} \\times ${n(v.rearWheels,0)}} = \\mathbf{${n(l.longT,1)}}\\ \\text{lbf/g}`)}
+    <div class="tag">Lateral transfer onto the outside rear tire, per 1 g of cornering</div>
+    ${T(`\\Delta W_{\\text{lat}} = \\frac{W\\,h}{t}\\,k_r = \\frac{${n(l.W,0)} \\times ${n(v.cgh,1)}}{${n(v.track,1)}} \\times ${n(v.rearRollDist,3)} = \\mathbf{${n(l.latT,1)}}\\ \\text{lbf/g}`)}`;
+}
+function renderCases(){
+  out.cases.forEach((r,i)=>{ const w=r.wf; const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set(`cf-${i}`,`→ Fw = (${F(w.Fx)}, ${F(w.Fy)}, ${F(w.Fz)}) lbf, |Fw| = ${F(Math.hypot(w.Fx,w.Fy,w.Fz))} lbf`); });
+  const r=out.cases[selCase], c=r.c, w=r.wf, l=out.vl;
+  $('#case-work-h').textContent = `Worked example: ${c.name}`;
+  const baseName = c.basis==='total' ? 'W' : 'W_c';
+  let fy;
+  if(c.transfer) fy = `F_y = g_{\\text{vert}}\\,${baseName} + g_{\\text{long}}\\,\\Delta W_{\\text{long}} - g_{\\text{lat}}\\,\\Delta W_{\\text{lat}} = ${n(c.vertG,2)}(${n(w.base,1)}) + ${p(c.longG,2)}(${n(l.longT,1)}) - ${p(c.latG,2)}(${n(l.latT,1)}) = \\mathbf{${n(w.Fy,1)}}\\ \\text{lbf}`;
+  else fy = `F_y = g_{\\text{vert}}\\,${baseName} = ${n(c.vertG,2)} \\times ${n(w.base,1)} = \\mathbf{${n(w.Fy,1)}}\\ \\text{lbf} \\qquad \\text{(no weight transfer in this case)}`;
+  $('#case-work').innerHTML = `
+    <p>${esc(c.why||'')}</p>
+    <div class="tag">Vertical load first</div>${T(fy)}
+    <div class="tag">Then the grip forces scale off it</div>
+    ${T(`F_x = g_{\\text{lat}}\\,F_y = ${p(c.latG,2)} \\times ${n(w.Fy,1)} = \\mathbf{${n(w.Fx,1)}}\\ \\text{lbf} \\qquad F_z = g_{\\text{long}}\\,F_y = ${p(c.longG,2)} \\times ${n(w.Fy,1)} = \\mathbf{${n(w.Fz,1)}}\\ \\text{lbf}`)}
+    ${T(`\\vec F_w = ${tv(r.Fw,1)}\\ \\text{lbf}, \\qquad |\\vec F_w| = ${n(Math.hypot(...r.Fw),1)}\\ \\text{lbf}`)}`;
+}
+function renderGeom(){
+  const r=out.cases[selCase];
+  if(r.error){ $('#geom-work').innerHTML=`<p>${esc(r.error)}</p>`; return; }
+  const P=r.P, d=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+  const gl=state.geometry[r.c.geom].label;
+  $('#geom-work').innerHTML = `
+    <div class="tag"><b>Worked example: ${esc(r.c.name)}</b>, using the <b>${esc(gl.toLowerCase())}</b> coordinates. Unit vector = (end − start) ÷ length. Links point toward the chassis, the shock points toward the trailing arm.</div>
+    ${T(`\\begin{aligned}
+      \\vec u_1 &= \\frac{\\vec P_{\\text{UCL,in}} - \\vec P_{\\text{UCL,out}}}{L_1} = \\frac{${tv(d(P.uclIn,P.uclOut))}}{${n(r.Lu,2)}} = ${tv(r.u1,3)} \\\\[4pt]
+      \\vec u_2 &= \\frac{\\vec P_{\\text{LCL,in}} - \\vec P_{\\text{LCL,out}}}{L_2} = \\frac{${tv(d(P.lclIn,P.lclOut))}}{${n(r.Ll,2)}} = ${tv(r.u2,3)} \\\\[4pt]
+      \\vec u_3 &= \\frac{\\vec P_{\\text{shock,out}} - \\vec P_{\\text{shock,in}}}{L_s} = \\frac{${tv(d(P.shOut,P.shIn))}}{${n(r.Ls,2)}} = ${tv(r.u3,3)}
+    \\end{aligned}`)}
+    <div class="tag">Lever arms, measured from the TA pivot to where each force acts (in)</div>
+    ${T(`\\begin{aligned} \\vec r_1 &= \\vec P_{\\text{UCL,out}} - \\vec P_{\\text{pivot}} = ${tv(r.ru)} & \\vec r_2 &= \\vec P_{\\text{LCL,out}} - \\vec P_{\\text{pivot}} = ${tv(r.rl)} \\\\ \\vec r_s &= \\vec P_{\\text{shock,out}} - \\vec P_{\\text{pivot}} = ${tv(r.rs)} & \\vec r_c &= \\vec P_{\\text{contact}} - \\vec P_{\\text{pivot}} = ${tv(r.rc)} \\end{aligned}`)}
+    <div class="tag">Link lengths used later for buckling: L<sub>1</sub> = ${fmt(r.Lu,2)} in, L<sub>2</sub> = ${fmt(r.Ll,2)} in</div>`;
+}
+function renderSolve(){
+  const r=out.cases[selCase];
+  if(r.error){ ['#cross-work','#matrix-work','#solve-work','#solve-tiles'].forEach(s=>$(s).innerHTML=`<p>${esc(r.error)}</p>`); }
+  else{
+    $('#cross-work').innerHTML = T(`\\begin{aligned}
+      \\vec r_1 \\times \\vec u_1 &= ${tv(r.ru)} \\times ${tv(r.u1,3)} = ${tv(r.m1,2)}\\ \\text{in} \\\\
+      \\vec r_2 \\times \\vec u_2 &= ${tv(r.rl)} \\times ${tv(r.u2,3)} = ${tv(r.m2,2)}\\ \\text{in} \\\\
+      \\vec r_s \\times \\vec u_3 &= ${tv(r.rs)} \\times ${tv(r.u3,3)} = ${tv(r.m3,2)}\\ \\text{in} \\\\
+      \\vec r_c \\times \\vec F_w &= ${tv(r.rc)} \\times ${tv(r.Fw,1)} = ${tv(r.mw,0)}\\ \\text{lbf·in}
+    \\end{aligned}`);
+    const A=r.A.map(row=>row.map(v=>n(v,3)).join(' & ')).join('\\\\');
+    $('#matrix-work').innerHTML = T(`\\begin{bmatrix}${A}\\end{bmatrix}\\begin{bmatrix}R_x\\\\R_y\\\\R_z\\\\F_1\\\\F_2\\\\F_s\\end{bmatrix} = ${cv(r.b,1)}\\begin{matrix}\\leftarrow\\ \\text{forces}\\\\ \\\\ \\\\ \\leftarrow\\ \\text{moments}\\\\ \\\\ \\\\ \\end{matrix}`,'c');
+    $('#solve-work').innerHTML = `
+      <div class="tag">Solve the linear system (Gaussian elimination, same answer as Excel's MINVERSE × MMULT)</div>
+      ${T(`x = A^{-1}\\,b \\quad\\Longrightarrow\\quad \\begin{bmatrix}R_x\\\\R_y\\\\R_z\\\\F_1\\\\F_2\\\\F_s\\end{bmatrix} = ${cv(r.x,1)}\\ \\text{lbf}`,'c')}
+      <div class="tag">Sanity check: put the answer back into all six equations. Both sums should be ~0.</div>
+      ${T(`\\Big|\\sum \\vec F\\Big| = ${r.residF.toExponential(1).replace('e','\\times10^{')+'}'}\\ \\text{lbf} \\qquad \\Big|\\sum \\vec M\\Big| = ${r.residM.toExponential(1).replace('e','\\times10^{')+'}'}\\ \\text{lbf·in} \\quad \\checkmark`,'c')}`;
+    const word=(v,shock)=> shock ? (v>=0?'compression (pushed)':'extension (pulled)') : (v>=0?'tension (pulled)':'compression (pushed)');
+    $('#solve-tiles').innerHTML = `
+      <div class="tile"><span class="k">Upper link F₁</span><span class="v ${r.F1>=0?'T':'C'}">${F(r.F1)} lbf</span><span class="s">${word(r.F1)} · ${F(Math.abs(r.F1)*LBF_TO_N)} N</span></div>
+      <div class="tile"><span class="k">Lower link F₂</span><span class="v ${r.F2>=0?'T':'C'}">${F(r.F2)} lbf</span><span class="s">${word(r.F2)} · ${F(Math.abs(r.F2)*LBF_TO_N)} N</span></div>
+      <div class="tile"><span class="k">Shock F<sub>s</sub></span><span class="v">${F(r.Fs)} lbf</span><span class="s">${word(r.Fs,true)} · ${F(Math.abs(r.Fs)*LBF_TO_N)} N</span></div>
+      <div class="tile"><span class="k">TA pivot |R|</span><span class="v">${F(r.Rmag)} lbf</span><span class="s">R = (${r.R.map(x=>F(x)).join(', ')}) lbf</span></div>`;
+  }
+  let t=`<thead><tr><th>Case</th><th class="num">Upper F₁</th><th></th><th class="num">Lower F₂</th><th></th><th class="num">Shock F<sub>s</sub></th><th class="num">R<sub>x</sub></th><th class="num">R<sub>y</sub></th><th class="num">R<sub>z</sub></th><th class="num">|R| pivot</th></tr></thead><tbody>`;
+  out.cases.forEach((r,i)=>{ if(r.error){ t+=`<tr><td>${esc(r.c.name)}</td><td colspan="9">${esc(r.error)}</td></tr>`; return; }
+    t+=`<tr class="${i===selCase?'sel':''}"><td>${esc(r.c.name)}</td><td class="num">${F(r.F1)}</td><td>${tc(r.F1)}</td><td class="num">${F(r.F2)}</td><td>${tc(r.F2)}</td><td class="num">${F(r.Fs)}</td><td class="num">${F(r.R[0])}</td><td class="num">${F(r.R[1])}</td><td class="num">${F(r.R[2])}</td><td class="num">${F(r.Rmag)}</td></tr>`; });
+  $('#allforces').innerHTML=t+`</tbody><caption class="note" style="caption-side:bottom;text-align:left;padding:6px 9px">All forces in lbf.</caption>`;
+}
+function renderUpright(){
+  const r=out.cases[selCase];
+  if(!r.error){
+    const f1=r.u1.map(x=>x*r.F1), f2=r.u2.map(x=>x*r.F2);
+    $('#upright-work').innerHTML = `
+      <div class="tag"><b>Worked example: ${esc(r.c.name)}</b></div>
+      ${T(`\\vec F_{\\text{TA}} = \\underbrace{${tv(f1,1)}}_{F_1\\vec u_1} + \\underbrace{${tv(f2,1)}}_{F_2\\vec u_2} + \\underbrace{${tv(r.Fw,1)}}_{\\vec F_w} = ${tv(r.toTA,1)}, \\quad |\\vec F_{\\text{TA}}| = \\mathbf{${n(r.toTAmag,0)}}\\ \\text{lbf}`)}
+      ${T(`\\vec M_{\\text{TA}} = ${tv(r.momTA,0)}\\ \\text{lbf·in}, \\quad |\\vec M_{\\text{TA}}| = \\mathbf{${n(r.momTAmag,0)}}\\ \\text{lbf·in}`)}`;
+  }
+  let t=`<thead><tr><th>Case</th><th class="num">F<sub>x</sub></th><th class="num">F<sub>y</sub></th><th class="num">F<sub>z</sub></th><th class="num">|F| lbf</th><th class="num">M<sub>x</sub></th><th class="num">M<sub>y</sub></th><th class="num">M<sub>z</sub></th><th class="num">|M| lbf·in</th></tr></thead><tbody>`;
+  out.cases.forEach((r,i)=>{ if(r.error) return;
+    t+=`<tr class="${i===selCase?'sel':''}"><td>${esc(r.c.name)}</td>${r.toTA.map(v=>`<td class="num">${F(v)}</td>`).join('')}<td class="num"><b>${F(r.toTAmag)}</b></td>${r.momTA.map(v=>`<td class="num">${F(v)}</td>`).join('')}<td class="num"><b>${F(r.momTAmag)}</b></td></tr>`; });
+  $('#upright-table').innerHTML=t+'</tbody>';
+}
+function linkWork(k){
+  const ch=out.checks[selCase]; if(!ch) return '';
+  const c=ch[k], L=state.links[k], s=c.sec, m=c.mat, name=k==='upper'?'Upper link':'Lower link', sub=k==='upper'?'1':'2';
+  const idv = L.section==='bar'?0:L.id;
+  let h=`<div class="tag"><b>${name}</b>: ${esc(L.mat)} ${L.section==='bar'?'solid bar':'tube'}, ${Ti(`S_y = ${n(m.Sy,0)}\\ \\text{psi},\\ E = ${n(m.E/1e6,1)}\\times10^6\\ \\text{psi}`)}</div>`;
+  h+=T(`\\begin{aligned}
+    A &= \\tfrac{\\pi}{4}\\left(D_o^2 - D_i^2\\right) = \\tfrac{\\pi}{4}\\left(${n(L.od,3)}^2 - ${n(idv,3)}^2\\right) = ${n(s.A,4)}\\ \\text{in}^2 \\\\
+    I &= \\tfrac{\\pi}{64}\\left(D_o^4 - D_i^4\\right) = ${n(s.I,5)}\\ \\text{in}^4 \\qquad r = \\sqrt{I/A} = ${n(s.r,4)}\\ \\text{in} \\\\
+    \\sigma &= \\frac{|F_${sub}|}{A} = \\frac{${n(Math.abs(c.F),0)}}{${n(s.A,4)}} = \\mathbf{${n(c.stress,0)}}\\ \\text{psi}\\ \\ (${c.tension?'\\text{tension}':'\\text{compression}'})
+  \\end{aligned}`);
+  if(c.tension){
+    h+=`<div class="tag">In tension, so the link fails by yielding</div>`;
+    h+=T(`\\sigma_{\\text{allow}} = S_y = ${n(m.Sy,0)}\\ \\text{psi}`);
+  } else {
+    h+=`<div class="tag">In compression: check slenderness against the transition</div>`;
+    h+=T(`\\lambda = \\frac{K L}{r} = \\frac{${n(state.check.K,2)} \\times ${n(c.L,2)}}{${n(s.r,4)}} = ${n(c.slender,1)}`);
+    h+=T(`\\lambda_t = \\sqrt{\\frac{2\\pi^2 (${n(m.E/1e6,1)}\\times10^6)}{${n(m.Sy,0)}}} = ${n(c.transition,1)}`);
+    if(c.regime==='Euler') h+=T(`\\lambda \\ge \\lambda_t \\Rightarrow \\text{Euler:}\\quad \\sigma_{cr} = \\frac{\\pi^2 E}{\\lambda^2} = \\frac{\\pi^2 (${n(m.E/1e6,1)}\\times10^6)}{${n(c.slender,1)}^2} = \\mathbf{${n(c.euler,0)}}\\ \\text{psi}`);
+    else h+=T(`\\lambda < \\lambda_t \\Rightarrow \\text{Johnson:}\\quad \\sigma_{cr} = S_y - \\frac{S_y^2}{4\\pi^2E}\\lambda^2 = ${n(m.Sy,0)} - \\frac{${n(m.Sy,0)}^2}{4\\pi^2(${n(m.E/1e6,1)}\\times10^6)}(${n(c.slender,1)})^2 = \\mathbf{${n(c.johnson,0)}}\\ \\text{psi}`);
+    h+=`<div class="tag">Equivalent critical load P<sub>cr</sub> = σ<sub>cr</sub>·A = ${F(c.Pcr)} lbf</div>`;
+  }
+  h+=T(`\\text{FoS} = \\frac{${n(c.allow,0)}}{${n(c.stress,0)}} = ${n(c.fos,2)} \\qquad \\text{Margin} = \\frac{${n(c.fos,2)}}{${n(state.check.designFactor,2)}} - 1 = \\mathbf{${n(c.margin,2)}}`);
+  h+=`<div>${pill(c.margin)} ${c.margin<0?'fails':'passes'} the design factor</div>`;
+  return h;
+}
+function renderLinks(){
+  $('#link-work-h').textContent = `Worked example: ${out.cases[selCase].c.name}`;
+  $('#lu-work').innerHTML=linkWork('upper'); $('#ll-work').innerHTML=linkWork('lower');
+  let t=`<thead><tr><th>Case</th><th>Link</th><th class="num">Force (lbf)</th><th></th><th class="num">Stress (psi)</th><th class="num">KL/r</th><th>Governing mode</th><th class="num">Allowable (psi)</th><th class="num">FoS</th><th class="num">Margin</th></tr></thead><tbody>`;
+  out.cases.forEach((r,i)=>{ const ch=out.checks[i]; if(!ch) return;
+    ['upper','lower'].forEach((k,j)=>{ const c=ch[k];
+      t+=`<tr class="${i===selCase?'sel':''}">${j===0?`<td rowspan="2">${esc(r.c.name)}</td>`:''}<td>${k==='upper'?'Upper':'Lower'}</td><td class="num">${F(c.F)}</td><td>${tc(c.F)}</td><td class="num">${F(c.stress)}</td><td class="num">${fmt(c.slender,1)}</td><td>${c.tension?'Yield':c.regime+' buckling'}</td><td class="num">${F(c.allow)}</td><td class="num">${fmt(c.fos,2)}</td><td class="num">${pill(c.margin)}</td></tr>`; }); });
+  $('#link-table').innerHTML=t+'</tbody>';
+}
+function renderJoints(){
+  const J=out.joints;
+  const row=(name,what,e,note)=>`<tr><td>${name}</td><td class="wrap">${what}</td><td class="num"><b>${e.v>0?F(e.v):'—'}</b></td><td class="num">${e.v>0?F(e.v*LBF_TO_N):'—'}</td><td>${esc(e.name)}</td><td class="wrap">${note||''}</td></tr>`;
+  const vecNote=(e,key)=> e.r ? `vector (${e.r[key].map(x=>F(x)).join(', ')}) lbf` : '';
+  $('#joint-table').innerHTML = `<thead><tr><th>Joint</th><th>Load</th><th class="num">Peak (lbf)</th><th class="num">Peak (N)</th><th>Governing case</th><th>Notes</th></tr></thead><tbody>
+    ${row('Upper camber link ends','<span class="T">tension</span>',J.uclT,'both rod ends + both mounting lugs see this, along the link axis')}
+    ${row('','<span class="C">compression</span>',J.uclC,'')}
+    ${row('Lower camber link ends','<span class="T">tension</span>',J.lclT,'')}
+    ${row('','<span class="C">compression</span>',J.lclC,'')}
+    ${row('Shock mounts (both ends)','<span class="C">compression</span>',J.shC,'shock bolt + chassis and TA brackets')}
+    ${row('','<span class="T">extension</span>',J.shT,J.shT.v>0?'':'shock never pulled in these cases')}
+    ${row('TA pivot','resultant |R|',J.pivot,vecNote(J.pivot,'R'))}
+    ${row('TA–upright joint','force |F<sub>TA</sub>|',J.taF,vecNote(J.taF,'toTA'))}
+    <tr><td></td><td class="wrap">moment |M<sub>TA</sub>|</td><td class="num"><b>${F(J.taM.v)}</b> <span class="note">lbf·in</span></td><td class="num">${fmt(J.taM.v*0.112985,0)} <span class="note">N·m</span></td><td>${esc(J.taM.name)}</td><td class="wrap">about TA OUT. Bolt pattern must react this too</td></tr>
+    </tbody>`;
+}
+function renderSummary(){
+  const links=[]; out.checks.forEach((ch,i)=>{ if(!ch) return; ['upper','lower'].forEach(k=>links.push({m:ch[k].margin,who:`${k==='upper'?'Upper':'Lower'} link · ${out.cases[i].c.name}`,c:ch[k]})); });
+  links.sort((a,b)=>a.m-b.m);
+  const nFail = links.filter(x=>x.m<0).length;
+  const cls = m=>m>=0.25?'ok':m>=0?'warn':'bad';
+  const wl=links[0], J=out.joints;
+  $('#summary').innerHTML = `
+    <div class="tile ${nFail?'bad':'ok'}"><span class="k">Camber link checks passing</span><span class="v">${links.length-nFail} / ${links.length}</span><span class="s">${nFail?nFail+' failing (margin < 0)':'all margins ≥ 0'}</span></div>
+    <div class="tile ${wl?cls(wl.m):''}"><span class="k">Worst link margin</span><span class="v">${wl?fmt(wl.m,2):'—'}</span><span class="s">${wl?esc(wl.who)+' · '+(wl.c.tension?'yield':wl.c.regime+' buckling'):''}</span></div>
+    <div class="tile"><span class="k">Peak shock force</span><span class="v">${F(J.shC.v)} lbf</span><span class="s">${esc(J.shC.name)}</span></div>
+    <div class="tile"><span class="k">Peak TA pivot load</span><span class="v">${F(J.pivot.v)} lbf</span><span class="s">${esc(J.pivot.name)}</span></div>`;
+  let t=`<thead><tr><th>Case</th><th class="num">Tire |F<sub>w</sub>|</th><th class="num">Upper F₁</th><th class="num">Lower F₂</th><th class="num">Shock</th><th class="num">Pivot |R|</th><th class="num">Upper margin</th><th class="num">Lower margin</th></tr></thead><tbody>`;
+  out.cases.forEach((r,i)=>{ if(r.error) return; const ch=out.checks[i];
+    t+=`<tr class="${i===selCase?'sel':''}"><td><button class="chip${i===selCase?' on':''}" data-case="${i}" type="button" style="padding:1px 10px">${esc(r.c.name)}</button></td><td class="num">${F(Math.hypot(...r.Fw))}</td><td class="num">${F(r.F1)} ${tc(r.F1)}</td><td class="num">${F(r.F2)} ${tc(r.F2)}</td><td class="num">${F(r.Fs)}</td><td class="num">${F(r.Rmag)}</td><td class="num">${pill(ch.upper.margin)}</td><td class="num">${pill(ch.lower.margin)}</td></tr>`; });
+  $('#sumtable').innerHTML=t+`</tbody><caption class="note" style="caption-side:bottom;text-align:left;padding:6px 9px">Forces in lbf. Click a case to make it the worked example.</caption>`;
+}
+
+// ---------- column curve ----------
+function cssv(nm){ return getComputedStyle(document.documentElement).getPropertyValue(nm).trim(); }
+function setupCanvas(cv){ const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight; if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); return {g,w,h}; }
+function drawCurve(){
+  const cv=$('#curve'); if(!cv.clientWidth) return; const {g,w,h}=setupCanvas(cv);
+  const L=state.links[curveLink], m=MATERIALS[L.mat];
+  const pts=[]; out.checks.forEach((ch,i)=>{ if(ch && !ch[curveLink].tension) pts.push({c:ch[curveLink],name:out.cases[i].c.name}); });
+  const anyC=out.checks.find(Boolean); const sl = anyC? anyC[curveLink].slender : 80;
+  const xmax=Math.max(160, Math.ceil(sl*1.4/20)*20);
+  const ymaxRaw=Math.max(m.Sy*1.08, ...pts.map(q=>q.c.stress*state.check.designFactor*1.1));
+  const ymax=Math.ceil(ymaxRaw/10000)*10000;
+  const pad={l:62,r:16,t:14,b:38}, X=v=>pad.l+(w-pad.l-pad.r)*v/xmax, Y=v=>h-pad.b-(h-pad.t-pad.b)*v/ymax;
+  const ink=cssv('--ink'), mut=cssv('--muted'), rule=cssv('--rule'), acc=cssv('--accent'), bad=cssv('--bad'), ok=cssv('--ok'), comp=cssv('--compress');
+  g.font='12px '+cssv('--mono'); g.lineWidth=1;
+  const ystep = ymax/5;
+  for(let y=0;y<=ymax+1;y+=ystep){ g.strokeStyle=rule; g.beginPath(); g.moveTo(pad.l,Y(y)); g.lineTo(w-pad.r,Y(y)); g.stroke(); g.fillStyle=mut; g.textAlign='right'; g.fillText(fmt(y/1000,0)+'k',pad.l-6,Y(y)+4); }
+  for(let x=0;x<=xmax;x+=20){ g.fillStyle=mut; g.textAlign='center'; g.fillText(String(x),X(x),h-pad.b+16); }
+  g.fillText('slenderness  λ = KL/r', (pad.l+w-pad.r)/2, h-4);
+  g.save(); g.translate(12,(pad.t+h-pad.b)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText('stress (psi)',0,0); g.restore();
+  const tr=Math.sqrt(2*Math.PI**2*m.E/m.Sy);
+  const john=s=>m.Sy-(m.Sy**2/(4*Math.PI**2*m.E))*s*s, eul=s=>Math.PI**2*m.E/(s*s);
+  g.setLineDash([4,4]); g.strokeStyle=mut; g.beginPath(); let first=true;
+  for(let s=tr;s<=Math.min(xmax,Math.sqrt(4*Math.PI**2*m.E/m.Sy)*0.999);s+=0.5){ const y=john(s); if(y<0) break; first?g.moveTo(X(s),Y(y)):g.lineTo(X(s),Y(y)); first=false; } g.stroke();
+  g.beginPath(); first=true; for(let s=Math.max(1,Math.sqrt(Math.PI**2*m.E/ymax));s<=tr;s+=0.5){ const y=eul(s); first?g.moveTo(X(s),Y(y)):g.lineTo(X(s),Y(y)); first=false; } g.stroke(); g.setLineDash([]);
+  g.strokeStyle=acc; g.lineWidth=2.5; g.beginPath();
+  for(let s=0;s<=xmax;s+=0.5){ const y = s<tr? john(s): eul(s); s===0?g.moveTo(X(s),Y(y)):g.lineTo(X(s),Y(y)); } g.stroke();
+  g.lineWidth=1; g.strokeStyle=mut; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(tr),pad.t); g.lineTo(X(tr),h-pad.b); g.stroke(); g.setLineDash([]);
+  g.fillStyle=mut; g.textAlign='left'; g.fillText('Johnson',X(Math.max(4,tr*0.25)),Y(john(tr*0.25))-8); g.fillText('Euler',X(Math.min(xmax-30,tr*1.25)),Y(eul(tr*1.25))-8);
+  g.fillText('transition λt = '+fmt(tr,0),X(tr)+5,pad.t+12);
+  g.strokeStyle=comp; g.setLineDash([5,3]); g.beginPath(); g.moveTo(X(sl),pad.t); g.lineTo(X(sl),h-pad.b); g.stroke(); g.setLineDash([]);
+  g.fillStyle=comp; g.fillText('this link λ = '+fmt(sl,1),X(sl)+5,pad.t+28);
+  let lastLy=-1e9;
+  pts.sort((a,b)=>b.c.stress-a.c.stress).forEach(q=>{ const y=q.c.stress*state.check.designFactor; const fail=q.c.margin<0;
+    const px=X(q.c.slender), py=Y(y);
+    g.fillStyle=fail?bad:ok; g.beginPath(); g.arc(px,py,5,0,7); g.fill();
+    const ly=Math.max(py+4, lastLy+14); lastLy=ly;
+    if(Math.abs(ly-(py+4))>2){ g.strokeStyle=mut; g.lineWidth=1; g.beginPath(); g.moveTo(px-6,py); g.lineTo(px-12,ly-4); g.stroke(); }
+    g.fillStyle=ink; g.textAlign='right'; g.fillText(q.name+'  '+(q.c.margin>=0?'+':'')+fmt(q.c.margin,2),px-14,ly); });
+  if(!pts.length){ g.fillStyle=mut; g.textAlign='center'; g.fillText('This link is in tension in every case, so buckling never applies',(pad.l+w)/2,pad.t+50); }
+}
+
+// ---------- 3D viewer ----------
+function makeView(sel, mode){
+  const host=$(sel), cv=host.querySelector('canvas');
+  const V={yaw:-0.6,pitch:0.35,zoom:1,draw:null};
+  const presets={front:[0,0],side:[-Math.PI/2,0],iso:[-0.6,0.35]};
+  host.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{ [V.yaw,V.pitch]=presets[b.dataset.view]; V.draw(); }));
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{ drag=[e.clientX,e.clientY,V.yaw,V.pitch]; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; });
+  cv.addEventListener('pointermove',e=>{ if(!drag) return; V.yaw=drag[2]+(e.clientX-drag[0])*0.01; V.pitch=Math.max(-1.5,Math.min(1.5,drag[3]+(e.clientY-drag[1])*0.01)); V.draw(); });
+  cv.addEventListener('pointerup',()=>{ drag=null; cv.style.cursor='grab'; });
+  cv.addEventListener('wheel',e=>{ e.preventDefault(); V.zoom*=Math.exp(-e.deltaY*0.001); V.zoom=Math.max(0.3,Math.min(5,V.zoom)); V.draw(); },{passive:false});
+  V.draw=function(){
+    if(!cv.clientWidth) return;
+    const {g,w,h}=setupCanvas(cv);
+    let P, r=null;
+    if(mode==='geom'){ P=state.geometry[selGeom].pts; }
+    else { r=out.cases[selCase]; if(!r||r.error) return; P=r.P; }
+    const keys=POINT_KEYS.map(k=>k[0]);
+    const ctr=[0,1,2].map(j=>keys.reduce((a,k)=>a+P[k][j],0)/keys.length);
+    const cy=Math.cos(V.yaw), sy=Math.sin(V.yaw), cp=Math.cos(V.pitch), sp=Math.sin(V.pitch);
+    const rot=q=>{ const x=q[0]-ctr[0], y=q[1]-ctr[1], z=q[2]-ctr[2]; const x1=cy*x+sy*z, z1=-sy*x+cy*z; const y2=cp*y-sp*z1; return [x1,y2]; };
+    let ext=0; keys.forEach(k=>{ const q=rot(P[k]); ext=Math.max(ext,Math.abs(q[0]),Math.abs(q[1])); });
+    const sc=Math.min(w,h)*0.40/(ext||1)*V.zoom*(mode==='solve'?0.85:1);
+    const pr=q=>{ const a=rot(q); return [w/2+a[0]*sc, h/2-a[1]*sc]; };
+    const ink=cssv('--ink'), mut=cssv('--muted'), acc=cssv('--accent'), ten=cssv('--tension'), com=cssv('--compress');
+    const o=[44,h-44]; [['X',[1,0,0]],['Y',[0,1,0]],['Z',[0,0,1]]].forEach(([nm,d])=>{ const q=rot([ctr[0]+d[0],ctr[1]+d[1],ctr[2]+d[2]]); g.strokeStyle=mut; g.lineWidth=1.5; g.beginPath(); g.moveTo(...o); g.lineTo(o[0]+q[0]*22,o[1]-q[1]*22); g.stroke(); g.fillStyle=mut; g.font='11px '+cssv('--mono'); g.fillText(nm,o[0]+q[0]*28-3,o[1]-q[1]*28+4); });
+    const line=(a,b,col,wd,dash)=>{ g.strokeStyle=col; g.lineWidth=wd; g.setLineDash(dash||[]); g.beginPath(); g.moveTo(...pr(a)); g.lineTo(...pr(b)); g.stroke(); g.setLineDash([]); };
+    const isSolve = mode==='solve';
+    g.fillStyle=cssv('--accent-wash'); g.beginPath(); [P.taIn,P.shOut,P.taOut].forEach((q,i)=>{ const a=pr(q); i?g.lineTo(...a):g.moveTo(...a); }); g.closePath(); g.fill();
+    line(P.taIn,P.taOut,acc,4); line(P.taIn,P.shOut,acc,3); line(P.shOut,P.taOut,acc,3);
+    line(P.taOut,P.uclOut,ink,3); line(P.taOut,P.lclOut,ink,3); line(P.uclOut,P.lclOut,ink,2); line(P.taOut,P.contact,ink,2,[3,3]);
+    const lc=v=> !isSolve? mut : (v>=0? ten: com);
+    line(P.uclIn,P.uclOut, isSolve?lc(r.F1):mut, 2.5); line(P.lclIn,P.lclOut, isSolve?lc(r.F2):mut, 2.5);
+    line(P.shIn,P.shOut, isSolve?(r.Fs>=0?com:ten):mut, 2.5,[6,3]);
+    g.font='11px '+cssv('--body');
+    POINT_KEYS.forEach(([k,l])=>{ const q=pr(P[k]); const inb=['uclIn','lclIn','shIn','taIn'].includes(k);
+      g.fillStyle=inb?ink:cssv('--sheet'); g.strokeStyle=ink; g.lineWidth=1.5;
+      if(inb){ g.fillRect(q[0]-4,q[1]-4,8,8); } else { g.beginPath(); g.arc(q[0],q[1],4,0,7); g.fill(); g.stroke(); }
+      if(!isSolve){ g.fillStyle=mut; g.fillText(l.replace(/ \(.*\)/,''),q[0]+7,q[1]-6); } });
+    if(isSolve){
+      const fmax=Math.max(Math.hypot(...r.Fw),Math.abs(r.F1),Math.abs(r.F2),Math.abs(r.Fs),r.Rmag);
+      const alen = ext*0.9/fmax;
+      const arrow=(at,f,col,label)=>{ const end=[at[0]+f[0]*alen,at[1]+f[1]*alen,at[2]+f[2]*alen]; const a=pr(at), b=pr(end);
+        g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2.5; g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke();
+        const ang=Math.atan2(b[1]-a[1],b[0]-a[0]); g.beginPath(); g.moveTo(...b); g.lineTo(b[0]-10*Math.cos(ang-0.4),b[1]-10*Math.sin(ang-0.4)); g.lineTo(b[0]-10*Math.cos(ang+0.4),b[1]-10*Math.sin(ang+0.4)); g.closePath(); g.fill();
+        g.font='600 11px '+cssv('--mono'); g.fillText(label,b[0]+5,b[1]-5); };
+      arrow(P.contact,r.Fw,ink,'Fw '+F(Math.hypot(...r.Fw)));
+      arrow(P.uclOut,r.u1.map(x=>x*r.F1),r.F1>=0?ten:com,'F1 '+F(r.F1));
+      arrow(P.lclOut,r.u2.map(x=>x*r.F2),r.F2>=0?ten:com,'F2 '+F(r.F2));
+      arrow(P.shOut,r.u3.map(x=>x*r.Fs),r.Fs>=0?com:ten,'Fs '+F(r.Fs));
+      arrow(P.taIn,r.R,mut,'R '+F(r.Rmag));
+    }
+  };
+  return V;
+}
+const views={ geom:makeView('#v-geom','geom'), solve:makeView('#v-solve','solve') };
+
+// ---------- events ----------
+document.addEventListener('input',e=>{
+  const t=e.target, path=t.dataset.bind; if(!path) return;
+  let v;
+  if(t.dataset.kind==='bool') v=t.checked;
+  else if(t.dataset.kind==='text') v=t.value;
+  else { v=parseFloat(t.value); if(!isFinite(v)) return; }
+  setPath(state,path,v);
+  if(/^links\.\w+\.section$/.test(path)){ buildFields(); }
+  if(/\.name$/.test(path) || /\.geom$/.test(path)){ buildChips(); }
+  schedule();
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.case!==undefined){ selCase=+b.dataset.case; buildChips(); buildCaseTable(); recompute(); }
+  if(b.dataset.geom){ selGeom=b.dataset.geom; buildGeomTable(); views.geom.draw(); }
+  if(b.dataset.curve){ curveLink=b.dataset.curve; buildChips(); drawCurve(); }
+  if(b.dataset.del!==undefined){ if(state.cases.length<=1){ toast('Keep at least one case'); return; } state.cases.splice(+b.dataset.del,1); if(selCase>=state.cases.length) selCase=0; buildCaseTable(); buildChips(); recompute(); }
+});
+$('#add-case').addEventListener('click',()=>{ state.cases.push({id:'c'+Date.now(),name:'New case',geom:'static',basis:'corner',vertG:1,longG:0,latG:0,transfer:true,env:true,why:'Custom case. Set its g’s in the row above.'}); selCase=state.cases.length-1; buildCaseTable(); buildChips(); recompute(); });
+$('#b-reset').addEventListener('click',()=>{ state=clone(DEFAULTS); selCase=0; selGeom='bump'; rebuild(); toast('Reset to M26 defaults'); });
+$('#preset-bar').addEventListener('click',()=>{ for(const k of ['upper','lower']) Object.assign(state.links[k],{mat:'7075-T6 Al',section:'bar',od:0.6875}); buildFields(); recompute(); toast('Both links set to 7075 Ø0.6875 solid bar'); });
+$('#preset-orig').addEventListener('click',()=>{ state.links=clone(DEFAULTS.links); buildFields(); recompute(); toast('Links back to original tubes'); });
+$('#b-io').addEventListener('click',()=>{ $('#io').classList.toggle('on'); $('#io-text').value=JSON.stringify(state,null,1); });
+async function copyText(txt,label){ try{ await navigator.clipboard.writeText(txt); toast(label+' copied'); }catch(e){ $('#io').classList.add('on'); $('#io-text').value=txt; $('#io-text').select(); toast('Clipboard blocked. Text is in the box on the left'); } }
+$('#io-copy').addEventListener('click',()=>copyText($('#io-text').value,'Inputs'));
+$('#io-load').addEventListener('click',()=>{ try{ const q=JSON.parse($('#io-text').value); if(!q.vehicle||!q.cases||!q.geometry||!q.links||!q.check) throw 0; state=q; selCase=0; rebuild(); toast('Inputs loaded'); }catch(e){ toast('That JSON is missing vehicle, cases, geometry, links or check'); } });
+$('#b-paste').addEventListener('click',()=>$('#paste-dlg').classList.toggle('on'));
+$('#paste-apply').addEventListener('click',()=>{
+  const rows=$('#paste-text').value.trim().split(/\n+/).map(l=>l.trim().split(/[\s,;\t]+/).map(Number).filter(x=>isFinite(x))).filter(r=>r.length>=3).map(r=>r.slice(-3));
+  if(rows.length<9){ toast(`Found ${rows.length} rows with 3 numbers. Need 9`); return; }
+  POINT_KEYS.forEach(([k],i)=>state.geometry[selGeom].pts[k]=rows[i]);
+  buildGeomTable(); recompute(); $('#paste-dlg').classList.remove('on'); toast('Hardpoints updated');
+});
+$('#b-copycsv').addEventListener('click',()=>{
+  const L=[['case','tire_Fx_lbf','tire_Fy_lbf','tire_Fz_lbf','Rx_lbf','Ry_lbf','Rz_lbf','upper_F1_lbf','lower_F2_lbf','shock_Fs_lbf','toTA_lbf','momentTA_lbfin','upper_margin','lower_margin'].join(',')];
+  out.cases.forEach((r,i)=>{ if(r.error) return; const ch=out.checks[i]; L.push([`"${r.c.name}"`,...r.Fw,...r.R,r.F1,r.F2,r.Fs,r.toTAmag,r.momTAmag,ch.upper.margin,ch.lower.margin].map(v=>typeof v==='number'?v.toFixed(3):v).join(',')); });
+  copyText(L.join('\n'),'Results CSV');
+});
+$('#b-copyjoints').addEventListener('click',()=>{
+  const J=out.joints, rows=[['joint','load','peak_lbf','peak_N','governing_case']];
+  [['Upper link','tension',J.uclT],['Upper link','compression',J.uclC],['Lower link','tension',J.lclT],['Lower link','compression',J.lclC],['Shock','compression',J.shC],['Shock','extension',J.shT],['TA pivot','resultant',J.pivot],['TA-upright','force',J.taF]].forEach(([a,b,e])=>rows.push([a,b,e.v.toFixed(1),(e.v*LBF_TO_N).toFixed(0),`"${e.name}"`]));
+  rows.push(['TA-upright','moment_lbf_in',J.taM.v.toFixed(0),'',`"${J.taM.name}"`]);
+  copyText(rows.map(r=>r.join(',')).join('\n'),'Design loads');
+});
+const secs=[...document.querySelectorAll('main section')];
+const navA=[...document.querySelectorAll('#nav a')];
+function onScroll(){ let cur=secs[0].id; for(const s of secs){ if(s.getBoundingClientRect().top<140) cur=s.id; } navA.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur)); }
+window.addEventListener('scroll',onScroll,{passive:true});
+const redraw=()=>{ views.geom.draw(); views.solve.draw(); drawCurve(); };
+window.addEventListener('resize',redraw);
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw); }catch(e){}
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+rebuild(); onScroll();
+})();
+</script>
+</body>
+</html>
