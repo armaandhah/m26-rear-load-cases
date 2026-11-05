@@ -23,8 +23,8 @@ const POINT_KEYS = [
 
 const DEFAULTS = {
   vehicle: {
-    carWeight: 437, driverWeight: 165, rearBias: 0.521, rearWheels: 2,
-    cgh: 25.2, wheelbase: 58, track: 60, rearRollDist: 0.521,
+    carWeight: 420, driverWeight: 140, rearBias: 0.521, rearWheels: 2,
+    cgh: 25.2, wheelbase: 58, track: 49.5, rearRollDist: 0.521,
   },
   geometry: {
     bump: { label: 'Max bump', pts: {

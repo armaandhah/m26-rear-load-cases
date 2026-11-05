@@ -547,8 +547,8 @@ const POINT_KEYS = [
 
 const DEFAULTS = {
   vehicle: {
-    carWeight: 437, driverWeight: 165, rearBias: 0.521, rearWheels: 2,
-    cgh: 25.2, wheelbase: 58, track: 60, rearRollDist: 0.521,
+    carWeight: 420, driverWeight: 140, rearBias: 0.521, rearWheels: 2,
+    cgh: 25.2, wheelbase: 58, track: 49.5, rearRollDist: 0.521,
   },
   geometry: {
     bump: { label: 'Max bump', pts: {
@@ -727,7 +727,7 @@ if (typeof module !== 'undefined') module.exports = { DEFAULTS, MATERIALS, runAl
 (function(){
 'use strict';
 const clone = o=>JSON.parse(JSON.stringify(o));
-const LS_KEY='m26-rear-loadcases-v2';
+const LS_KEY='m26-rear-loadcases-v3';
 let state = clone(DEFAULTS);
 try{ const s=localStorage.getItem(LS_KEY); if(s){ const p=JSON.parse(s); if(p && p.vehicle && p.cases && p.geometry && p.links) state=p; } }catch(e){}
 let selCase=0, selGeom='bump', curveLink='upper', out=null;
