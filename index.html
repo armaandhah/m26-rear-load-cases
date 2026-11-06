@@ -580,8 +580,8 @@ const DEFAULTS = {
       why:'Landing a jump: 5 g vertical on one rear corner.' },
     { id:'onewheel',name:'One-Wheel Landing',   geom:'bump',   basis:'total',  vertG:5, longG:0,    latG:0,    transfer:false,
       why:'Worst case: the whole car (5 g) lands on one wheel. Very conservative.' },
-    { id:'corner',  name:'Cornering',           geom:'static', basis:'corner', vertG:1, longG:0,    latG:-0.8, transfer:true,
-      why:'0.8 g turn (0.47 g measured on skidpad), outside rear wheel. Lateral weight transfer adds load.' },
+    { id:'corner',  name:'Cornering',           geom:'static', basis:'corner', vertG:1, longG:0,    latG:-1.0, transfer:true,
+      why:'1.0 g turn (about 2x the 0.47 g measured on skidpad), outside rear wheel. Lateral weight transfer adds load.' },
     { id:'brake',   name:'Max Brake',           geom:'droop',  basis:'corner', vertG:1, longG:-0.6, latG:0,    transfer:true,
       why:'0.6 g braking. Rear unloads toward droop; tire drags backward.' },
     { id:'accel',   name:'Max Accel',           geom:'static', basis:'corner', vertG:1, longG:0.3,  latG:0,    transfer:true,
@@ -727,7 +727,7 @@ if (typeof module !== 'undefined') module.exports = { DEFAULTS, MATERIALS, runAl
 (function(){
 'use strict';
 const clone = o=>JSON.parse(JSON.stringify(o));
-const LS_KEY='m26-rear-loadcases-v4';
+const LS_KEY='m26-rear-loadcases-v5';
 let state = clone(DEFAULTS);
 try{ const s=localStorage.getItem(LS_KEY); if(s){ const p=JSON.parse(s); if(p && p.vehicle && p.cases && p.geometry && p.links) state=p; } }catch(e){}
 let selCase=0, selGeom='bump', curveLink='upper', out=null;
